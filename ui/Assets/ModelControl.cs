@@ -58,7 +58,6 @@ enum FACE_MESH {
     MOUTH_U,
     MOUTH_E,
     MOUTH_O,
-    MOUTH_T,
 
     TEETH_HIDE,
     TEETH_VAMPIRE,
@@ -80,10 +79,10 @@ public static class BODY_PART_NAME {
     public const string SPINE = "J_Bip_C_Spine";
     public const string CHEST = "J_Bip_C_Chest";
     public const string CHEST_UPPER = "J_Bip_C_UpperChest";
-    public const string BOOB_LEFT_ROOT = "J_Sec_L_Bust1";
-    public const string BOOB_LEFT_MID = "J_Sec_L_Bust2";
-    public const string BOOB_RIGHT_ROOT = "J_Sec_R_Bust1";
-    public const string BOOB_RIGHT_MID = "J_Sec_R_Bust2";
+    public const string CHEST_LEFT_ROOT = "J_Sec_L_Bust1";
+    public const string CHEST_LEFT_MID = "J_Sec_L_Bust2";
+    public const string CHEST_RIGHT_ROOT = "J_Sec_R_Bust1";
+    public const string CHEST_RIGHT_MID = "J_Sec_R_Bust2";
     public const string NECK = "J_Bip_C_Neck";
     public const string HEAD = "J_Bip_C_Head";
     public const string EYE_LEFT = "J_Adj_L_FaceEye";
@@ -144,6 +143,12 @@ public static class BODY_PART_NAME {
     public const string SECONDARY = "secondary";
 }
 
+public static class SECONDARY_BODY_PART_NAME {
+    public const string CHEST = "Bust";
+    public const string EAR_CAT = "CatEar";
+    public const string SKIRT = "Skirt";
+    public const string HAIR = "Hair";
+}
 
 public static class UTILS {
     public static float square(float value) {
@@ -167,13 +172,16 @@ public static class UTILS {
 }
 
 public class ModelControl : MonoBehaviour {
+    [Header("Avatar")]
     [SerializeField]
     public Avatar avatar;
-    
+
+    [Header("Camera")]
     [SerializeField]
     [Range(-15.0f, +15.0f)]
     public float camera_angle_vertical = -15.0f;
 
+    [Header("Arms")]
     [SerializeField]
     [Range(-90.0f, 0.0f)]
     public float right_arm_angle = -60.0f;
@@ -182,6 +190,7 @@ public class ModelControl : MonoBehaviour {
     [Range(0.0f, 90.0f)]
     public float left_arm_angle = +60.0f;
 
+    [Header("Mouth")]
     [SerializeField]
     [Range(50.0f, 80.0f)]
     public float default_mouth_openness_horizontal = +73.0f;
@@ -190,17 +199,22 @@ public class ModelControl : MonoBehaviour {
     [Range(10.0f, 40.0f)]
     public float default_mouth_openness_vertical = +26.0f;
 
+    [Header("Position")]
     [SerializeField]
     [Range(-10.0f, 10.0f)]
     public float default_position_deepness = 0.8f;
+    [SerializeField]
+    public bool lock_position_deepness = true;
 
+    [SerializeField]
+    public bool enable_position_change = true;
+
+    [Header("Smoothing")]
     [SerializeField]
     [Range(1, 6)]
     public int smooth_level = 4;
     private int smooth_step = 0;
 
-    [SerializeField]
-    public bool enable_position_change = true;
 
     // body parts
     private GameObject eye_right = null;
@@ -218,6 +232,7 @@ public class ModelControl : MonoBehaviour {
     private GameObject arm_lower_left = null;
     private float shoulder_length = 0.0f;
     private GameObject body_root = null;
+    private GameObject hips = null;
 
     private SkinnedMeshRenderer face_mesh = null;
 
@@ -231,6 +246,7 @@ public class ModelControl : MonoBehaviour {
     private string address = "127.0.0.1";
     
     // Fields
+    [Header("Data")]
     [Range(-16.0f, +8.0f)]
     public float iris_left_x = 0.0f;
     [Range(-10.0f, +10.0f)]
@@ -300,6 +316,7 @@ public class ModelControl : MonoBehaviour {
 
     /* This will be changed at startup, no worries */
     private float head_size = 1.0f;
+    private Vector3 hips_position = new Vector3(0.0f, 0.0f, 0.0f);
 
     // Connection Methods
     
@@ -419,7 +436,24 @@ public class ModelControl : MonoBehaviour {
     GameObject get_child_with_name(string name) {
         return this.find_child_recursive(this.gameObject.transform, name);
     }
-    
+
+    VRMSpringBone get_secondary_body_bone(string name) {
+        VRMSpringBone found_bone = null;
+
+        GameObject secondary_body_parts = this.get_child_with_name(BODY_PART_NAME.SECONDARY);
+        if (secondary_body_parts != null) {
+            VRMSpringBone[] spring_bones = secondary_body_parts.GetComponents<VRMSpringBone>();
+            if (spring_bones != null) {
+                foreach (VRMSpringBone spring_bone in spring_bones) {
+                    if (spring_bone.m_comment == name) {
+                        found_bone = spring_bone;
+                        break;
+                    }
+                }
+            }
+        }
+        return found_bone;
+    }
     
     // Initialization
     
@@ -459,6 +493,7 @@ public class ModelControl : MonoBehaviour {
         // root
 
         this.body_root = this.get_child_with_name(BODY_PART_NAME.ROOT);
+        this.hips = this.get_child_with_name(BODY_PART_NAME.HIPS);
     }
 
 
@@ -506,30 +541,30 @@ public class ModelControl : MonoBehaviour {
                 VRMSpringBoneColliderGroup.SphereCollider right_collider = colliders[2];
                 right_collider.Radius = right_collider.Radius * 1.5f;
 
-                // Chest / upper / boobas
+                // Chest / upper / chest
 
-                GameObject boob_left_root = this.get_child_with_name(BODY_PART_NAME.BOOB_LEFT_ROOT);
-                GameObject boob_right_root = this.get_child_with_name(BODY_PART_NAME.BOOB_RIGHT_ROOT);
-                GameObject boob_left_mid = this.get_child_with_name(BODY_PART_NAME.BOOB_LEFT_MID);
-                GameObject boob_right_mid = this.get_child_with_name(BODY_PART_NAME.BOOB_RIGHT_MID);
+                GameObject chest_left_root = this.get_child_with_name(BODY_PART_NAME.CHEST_LEFT_ROOT);
+                GameObject chest_right_root = this.get_child_with_name(BODY_PART_NAME.CHEST_RIGHT_ROOT);
+                GameObject chest_left_mid = this.get_child_with_name(BODY_PART_NAME.CHEST_LEFT_MID);
+                GameObject chest_right_mid = this.get_child_with_name(BODY_PART_NAME.CHEST_RIGHT_MID);
 
                 if (
-                    (boob_left_root != null) &&
-                    (boob_right_root != null) &&
-                    (boob_left_mid != null) &&
-                    (boob_right_mid != null)
+                    (chest_left_root != null) &&
+                    (chest_right_root != null) &&
+                    (chest_left_mid != null) &&
+                    (chest_right_mid != null)
                 ) {
                     Vector3 chest_upper_position = chest_upper.transform.position;
 
-                    /* Extract the upper torso value from the boob positions, because they are absolute at this case */
-                    Vector3 boob_left_root_position = boob_left_root.transform.position - chest_upper_position;
-                    Vector3 boob_right_root_position = boob_right_root.transform.position - chest_upper_position;
-                    Vector3 boob_left_mid_position = boob_left_mid.transform.position - chest_upper_position;
-                    Vector3 boob_right_mid_position = boob_right_mid.transform.position - chest_upper_position;
+                    /* Extract the upper torso value from the chest positions, because they are absolute at this case */
+                    Vector3 chest_left_root_position = chest_left_root.transform.position - chest_upper_position;
+                    Vector3 chest_right_root_position = chest_right_root.transform.position - chest_upper_position;
+                    Vector3 chest_left_mid_position = chest_left_mid.transform.position - chest_upper_position;
+                    Vector3 chest_right_mid_position = chest_right_mid.transform.position - chest_upper_position;
 
                     float collision_box_size = (
-                        UTILS.point_difference(boob_left_root_position, boob_left_mid_position) +
-                        UTILS.point_difference(boob_right_root_position, boob_right_mid_position)
+                        UTILS.point_difference(chest_left_root_position, chest_left_mid_position) +
+                        UTILS.point_difference(chest_right_root_position, chest_right_mid_position)
                     );
 
                     VRMSpringBoneColliderGroup.SphereCollider[] new_colliders = (
@@ -538,19 +573,19 @@ public class ModelControl : MonoBehaviour {
                             left_collider,
                             right_collider,
                             new VRMSpringBoneColliderGroup.SphereCollider {
-                                Offset = boob_left_root_position,
+                                Offset = chest_left_root_position,
                                 Radius = collision_box_size * 0.6f
                             },
                             new VRMSpringBoneColliderGroup.SphereCollider {
-                                Offset = boob_left_root_position + boob_left_mid_position,
+                                Offset = chest_left_root_position + chest_left_mid_position,
                                 Radius = collision_box_size * 0.3f
                             },
                             new VRMSpringBoneColliderGroup.SphereCollider {
-                                Offset = boob_right_root_position,
+                                Offset = chest_right_root_position,
                                 Radius = collision_box_size * 0.6f
                             },
                             new VRMSpringBoneColliderGroup.SphereCollider {
-                                Offset = boob_right_root_position + boob_right_mid_position,
+                                Offset = chest_right_root_position + chest_right_mid_position,
                                 Radius = collision_box_size * 0.3f
                             }
                         }
@@ -561,6 +596,24 @@ public class ModelControl : MonoBehaviour {
         }
     }
 
+    void try_adjust_chest_gravity() {
+        VRMSpringBone chest_bone = this.get_secondary_body_bone(SECONDARY_BODY_PART_NAME.CHEST);
+        if (chest_bone != null) {
+            chest_bone.m_stiffnessForce = 0.2f;
+            chest_bone.m_gravityPower = 0.05f;
+            chest_bone.m_dragForce = 1.0f;
+        }
+    }
+
+
+    void try_adjust_ear_cat_gravity() {
+        VRMSpringBone ear_cat  = this.get_secondary_body_bone(SECONDARY_BODY_PART_NAME.EAR_CAT);
+        if (ear_cat != null) {
+            ear_cat.m_stiffnessForce = 4.0f;
+            ear_cat.m_gravityPower = 0.0f;
+            ear_cat.m_dragForce = 1.0f;
+        }
+    }
 
     void set_shoulder_length() {
         GameObject shoulder_right = this.shoulder_right;
@@ -594,12 +647,31 @@ public class ModelControl : MonoBehaviour {
             }
         }
     }
+
+    void set_hips_position() {
+        GameObject body_root = this.body_root;
+        GameObject hips = this.hips;
+        if ((body_root != null) && (hips != null)) {
+            /* Revert the rotation */
+            this.hips_position = (
+                Quaternion.Inverse(hips.transform.rotation) * hips.transform.position -
+                Quaternion.Inverse(hips.transform.rotation) * body_root.transform.position
+            );
+        }
+    }
+
     // Start is called before the first frame update
 
     void Start() {
         this.try_set_body_parts();
+
         this.set_head_size();
+        this.set_hips_position();
+
         this.try_adjust_colliders();
+        this.try_adjust_chest_gravity();
+        this.try_adjust_ear_cat_gravity();
+
         this.maybe_start_tpc_connection();
 
         this.target_fps = Application.targetFrameRate;
@@ -828,6 +900,10 @@ public class ModelControl : MonoBehaviour {
                 if (face__a__value > 100.0f) {
                     face__o__value = face__a__value - 100.0f;
                     face__a__value = 100.0f;
+
+                    if (face__o__value > 100.0f) {
+                        face__o__value = 100.0f;
+                    }
                 }
             }
 
@@ -843,29 +919,60 @@ public class ModelControl : MonoBehaviour {
                 if (face__u__value > 100.0f) {
                     face__u__value = 100.0f;
                 }
+
+                /* When u value is too high the face might overflow at places, so we will reduce a and o values */
+                if (face__u__value > 50.0f) {
+                    float openness_reduction = (face__u__value - 50.0f) * 0.5f;
+
+                    face__a__value -= openness_reduction;
+                    if (face__a__value < 0.0f) {
+                        face__a__value = 0.0f;
+                    }
+
+                    face__o__value -= openness_reduction;
+                    if (face__o__value < 0.0f) {
+                        face__o__value = 0.0f;
+                    }
+                }
             }
 
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_A, face__a__value);
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_I, face__i__value);
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_U, face__u__value);
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_O, face__o__value);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.TEETH_SHORT_BOT, -face__o__value);
         }
     }
 
     void update_position() {
         GameObject body_root = this.body_root;
+        GameObject hips = this.hips;
         GameObject head = this.head;
         GameObject neck = this.neck;
 
-        if ((body_root != null) && (head != null) && (neck != null)) {
+        if ((body_root != null) && (hips != null) && (head != null) && (neck != null)) {
+
             Vector3 neck_difference = neck.transform.position - head.transform.position;
+            Vector3 hips_position = body_root.transform.position + (hips.transform.rotation * this.hips_position);
 
             float head_size = this.head_size;
 
-            body_root.transform.position = new Vector3(
-                this.face_position_y * head_size + neck_difference.x,
-                this.face_position_x * head_size + neck_difference.y,
-                this.face_position_z * head_size + neck_difference.z + default_position_deepness
+            float position_z;
+            if (this.lock_position_deepness) {
+                position_z = hips_position.z;
+            } else {
+                position_z = (
+                    hips_position.z +
+                    this.face_position_z * head_size +
+                    neck_difference.z +
+                    default_position_deepness
+                );
+            }
+
+            hips.transform.position = new Vector3(
+                hips_position.x + this.face_position_y * head_size + neck_difference.x,
+                hips_position.y + this.face_position_x * head_size + neck_difference.y,
+                position_z
             );
         }
     }
