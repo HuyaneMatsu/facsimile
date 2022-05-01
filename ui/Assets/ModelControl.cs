@@ -136,7 +136,8 @@ public static class BODY_PART_NAME {
     public const string LEG_UPPER_RIGHT = "J_Bip_R_UpperLeg";
     public const string LEG_LOWER_RIGHT = "J_Bip_R_LowerLeg";
     public const string FOOT_RIGHT = "J_Bip_R_Foot";
-    
+
+    public const string ROOT = "Root";
     public const string FACE = "Face";
     public const string BODY = "Body";
     public const string HAIR = "Hair";
@@ -190,9 +191,16 @@ public class ModelControl : MonoBehaviour {
     public float default_mouth_openness_vertical = +26.0f;
 
     [SerializeField]
+    [Range(-10.0f, 10.0f)]
+    public float default_position_deepness = 0.8f;
+
+    [SerializeField]
     [Range(1, 6)]
     public int smooth_level = 4;
     private int smooth_step = 0;
+
+    [SerializeField]
+    public bool enable_position_change = true;
 
     // body parts
     private GameObject eye_right = null;
@@ -209,6 +217,7 @@ public class ModelControl : MonoBehaviour {
     private GameObject arm_lower_right = null;
     private GameObject arm_lower_left = null;
     private float shoulder_length = 0.0f;
+    private GameObject body_root = null;
 
     private SkinnedMeshRenderer face_mesh = null;
 
@@ -248,6 +257,13 @@ public class ModelControl : MonoBehaviour {
     [Range(-0.0f, +100.0f)]
     public float mouth_openness_y = 0.0f;
 
+    [Range(-5.0f, +5.0f)]
+    public float face_position_x = 0.0f;
+    [Range(-5.0f, +5.0f)]
+    public float face_position_y = 0.0f;
+    [Range(-10.0f, -1.0f)]
+    public float face_position_z = 0.0f;
+
     private float target_iris_left_x = 0.0f;
     private float target_iris_left_y = 0.0f;
     private float target_iris_right_x = 0.0f;
@@ -259,6 +275,9 @@ public class ModelControl : MonoBehaviour {
     private float target_head_z = 0.0f;
     private float target_mouth_openness_x = 0.0f;
     private float target_mouth_openness_y = 0.0f;
+    private float target_face_position_x = 0.0f;
+    private float target_face_position_y = 0.0f;
+    private float target_face_position_z = 0.0f;
 
     private float step_iris_left_x = 0.0f;
     private float step_iris_left_y = 0.0f;
@@ -271,11 +290,17 @@ public class ModelControl : MonoBehaviour {
     private float step_head_z = 0.0f;
     private float step_mouth_openness_x = 0.0f;
     private float step_mouth_openness_y = 0.0f;
+    private float step_face_position_x = 0.0f;
+    private float step_face_position_y = 0.0f;
+    private float step_face_position_z = 0.0f;
 
     // system
     /* Unused for now */
     private float target_fps = 60.0f;
-    
+
+    /* This will be changed at startup, no worries */
+    private float head_size = 1.0f;
+
     // Connection Methods
     
     void maybe_start_tpc_connection() {
@@ -361,6 +386,10 @@ public class ModelControl : MonoBehaviour {
         this.target_mouth_openness_x = float.Parse(floats[9]);
         this.target_mouth_openness_y = float.Parse(floats[10]);
 
+        this.target_face_position_y = float.Parse(floats[11]);
+        this.target_face_position_x = float.Parse(floats[12]);
+        this.target_face_position_z = float.Parse(floats[13]);
+
         // Reset smooth step
         this.smooth_step = 0;
     }
@@ -426,6 +455,10 @@ public class ModelControl : MonoBehaviour {
         this.arm_upper_left = this.get_child_with_name(BODY_PART_NAME.ARM_UPPER_LEFT);
         this.arm_lower_right = this.get_child_with_name(BODY_PART_NAME.ARM_LOWER_RIGHT);
         this.arm_lower_left = this.get_child_with_name(BODY_PART_NAME.ARM_LOWER_LEFT);
+
+        // root
+
+        this.body_root = this.get_child_with_name(BODY_PART_NAME.ROOT);
     }
 
 
@@ -548,10 +581,24 @@ public class ModelControl : MonoBehaviour {
         }
     }
 
+    void set_head_size() {
+        GameObject head = this.head;
+        if (head != null) {
+            VRMSpringBoneColliderGroup head_collider_group = head.GetComponent<VRMSpringBoneColliderGroup>();
+            if (head_collider_group != null) {
+                VRMSpringBoneColliderGroup.SphereCollider[] colliders = head_collider_group.Colliders;
+                if (colliders.Length == 1) {
+                    VRMSpringBoneColliderGroup.SphereCollider collider = colliders[0];
+                    this.head_size = collider.Radius;
+                }
+            }
+        }
+    }
     // Start is called before the first frame update
 
     void Start() {
         this.try_set_body_parts();
+        this.set_head_size();
         this.try_adjust_colliders();
         this.maybe_start_tpc_connection();
 
@@ -583,6 +630,9 @@ public class ModelControl : MonoBehaviour {
                 this.head_z = this.target_head_z;
                 this.mouth_openness_x = this.target_mouth_openness_x;
                 this.mouth_openness_y = this.target_mouth_openness_y;
+                this.face_position_x = this.target_face_position_x;
+                this.face_position_y = this.target_face_position_y;
+                this.face_position_z = this.target_face_position_z;
             }
         } else {
             if (smooth_step == 0) {
@@ -601,6 +651,9 @@ public class ModelControl : MonoBehaviour {
                 this.step_head_z = (this.target_head_z - this.head_z) / smooth_level;
                 this.step_mouth_openness_x = (this.target_mouth_openness_x - this.mouth_openness_x) / smooth_level;
                 this.step_mouth_openness_y = (this.target_mouth_openness_y - this.mouth_openness_y) / smooth_level;
+                this.step_face_position_x = (this.target_face_position_x - this.face_position_x) / smooth_level;
+                this.step_face_position_y = (this.target_face_position_y - this.face_position_y) / smooth_level;
+                this.step_face_position_z = (this.target_face_position_z - this.face_position_z) / smooth_level;
 
             } else if (smooth_step >= smooth_level) {
                 goto skip_step;
@@ -617,6 +670,9 @@ public class ModelControl : MonoBehaviour {
             this.head_z += this.step_head_z;
             this.mouth_openness_x += this.step_mouth_openness_x;
             this.mouth_openness_y += this.step_mouth_openness_y;
+            this.face_position_x += this.step_face_position_x;
+            this.face_position_y += this.step_face_position_y;
+            this.face_position_z += this.step_face_position_z;
 
             skip_step:;
         }
@@ -796,6 +852,24 @@ public class ModelControl : MonoBehaviour {
         }
     }
 
+    void update_position() {
+        GameObject body_root = this.body_root;
+        GameObject head = this.head;
+        GameObject neck = this.neck;
+
+        if ((body_root != null) && (head != null) && (neck != null)) {
+            Vector3 neck_difference = neck.transform.position - head.transform.position;
+
+            float head_size = this.head_size;
+
+            body_root.transform.position = new Vector3(
+                this.face_position_y * head_size + neck_difference.x,
+                this.face_position_x * head_size + neck_difference.y,
+                this.face_position_z * head_size + neck_difference.z + default_position_deepness
+            );
+        }
+    }
+
     // Update is called once per frame
     void Update() {
         this.smoothing_step();
@@ -804,6 +878,9 @@ public class ModelControl : MonoBehaviour {
         this.update_eye_closedness();
         this.update_mouth_openness();
         this.update_arms();
+        if (this.enable_position_change) {
+            this.update_position();
+        }
     }
     
     // Teardown
@@ -827,5 +904,4 @@ public class ModelControl : MonoBehaviour {
             }
         }
     }
-
 }

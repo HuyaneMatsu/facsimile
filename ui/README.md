@@ -1,10 +1,11 @@
 # Getting started
 
-> This file containst detailed steps of what I did. Might change as I go along and write better software.
+> This file contains detailed steps of what I did. Might change as I go along and write better software.
 
 #### Create model
 
 1. First create an model with **VRoid studio**. Install it from Stream it is free & works on Linux.
+   
 2. After you created it, **export it as VRM**.
 
 #### Import the model
@@ -27,4 +28,16 @@
 
 5. Import the model with `VRM0` -> `Import from VRM 0.x`.
 
-# TODO
+#### Animate the model
+
+1. Go to the directory of your model. Pull your model into the field.
+    
+    > Resetting it's coordinates is recommended.
+
+2. Copy paste the [**ModelControl.cs**](./Assets/ModelControl.cs) file to your project.
+
+3. Select your model, **Add Component**.
+
+4. Select the **ModelControl.cs** file.
+
+5. Assign the model to the **Avatar** field.

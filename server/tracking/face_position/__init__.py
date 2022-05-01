@@ -1,7 +1,7 @@
 from .constants import *
-from .mouth import *
+from .face_position import *
 
 __all__ = (
     *constants.__all__,
-    *mouth.__all__,
+    *face_position.__all__,
 )
