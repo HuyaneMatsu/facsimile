@@ -202,7 +202,7 @@ public class ModelControl : MonoBehaviour {
     [Header("Position")]
     [SerializeField]
     [Range(-10.0f, 10.0f)]
-    public float default_position_deepness = 0.8f;
+    public float default_position_deepness = 0.7f;
     [SerializeField]
     public bool lock_position_deepness = true;
 
@@ -280,6 +280,9 @@ public class ModelControl : MonoBehaviour {
     [Range(-10.0f, -1.0f)]
     public float face_position_z = 0.0f;
 
+    [Range(0.0f, 100.0f)]
+    public float smile_rate = 0.0f;
+
     private float target_iris_left_x = 0.0f;
     private float target_iris_left_y = 0.0f;
     private float target_iris_right_x = 0.0f;
@@ -294,6 +297,7 @@ public class ModelControl : MonoBehaviour {
     private float target_face_position_x = 0.0f;
     private float target_face_position_y = 0.0f;
     private float target_face_position_z = 0.0f;
+    private float target_smile_rate = 0.0f;
 
     private float step_iris_left_x = 0.0f;
     private float step_iris_left_y = 0.0f;
@@ -309,6 +313,7 @@ public class ModelControl : MonoBehaviour {
     private float step_face_position_x = 0.0f;
     private float step_face_position_y = 0.0f;
     private float step_face_position_z = 0.0f;
+    private float step_smile_rate = 0.0f;
 
     // system
     /* Unused for now */
@@ -407,6 +412,8 @@ public class ModelControl : MonoBehaviour {
         this.target_face_position_x = float.Parse(floats[12]);
         this.target_face_position_z = float.Parse(floats[13]);
 
+        this.target_smile_rate = float.Parse(floats[14]);
+
         // Reset smooth step
         this.smooth_step = 0;
     }
@@ -454,7 +461,21 @@ public class ModelControl : MonoBehaviour {
         }
         return found_bone;
     }
-    
+
+    public IEnumerable<VRMSpringBone> iter_secondary_body_bones(string name) {
+        GameObject secondary_body_parts = this.get_child_with_name(BODY_PART_NAME.SECONDARY);
+        if (secondary_body_parts != null) {
+            VRMSpringBone[] spring_bones = secondary_body_parts.GetComponents<VRMSpringBone>();
+            if (spring_bones != null) {
+                foreach (VRMSpringBone spring_bone in spring_bones) {
+                    if (spring_bone.m_comment == name) {
+                        yield return spring_bone;
+                    }
+                }
+            }
+        }
+    }
+
     // Initialization
     
     void try_set_body_parts() {
@@ -520,6 +541,9 @@ public class ModelControl : MonoBehaviour {
         this.try_adjust_colliders_of(this.arm_upper_left, 1.5f);
         this.try_adjust_colliders_of(this.arm_lower_right, 1.8f);
         this.try_adjust_colliders_of(this.arm_lower_left, 1.8f);
+
+        //head
+        this.try_adjust_colliders_of(this.head, 1.05f);
 
         // Chest / upper
 
@@ -615,6 +639,14 @@ public class ModelControl : MonoBehaviour {
         }
     }
 
+    void try_adjust_hair_gravity() {
+        foreach (VRMSpringBone hair in this.iter_secondary_body_bones(SECONDARY_BODY_PART_NAME.HAIR)) {
+            hair.m_stiffnessForce = 1.0f;
+            hair.m_gravityPower = 0.08f;
+            hair.m_dragForce = 1.0f;
+        }
+    }
+
     void set_shoulder_length() {
         GameObject shoulder_right = this.shoulder_right;
         GameObject shoulder_left = this.shoulder_left;
@@ -671,6 +703,7 @@ public class ModelControl : MonoBehaviour {
         this.try_adjust_colliders();
         this.try_adjust_chest_gravity();
         this.try_adjust_ear_cat_gravity();
+        this.try_adjust_hair_gravity();
 
         this.maybe_start_tpc_connection();
 
@@ -705,6 +738,7 @@ public class ModelControl : MonoBehaviour {
                 this.face_position_x = this.target_face_position_x;
                 this.face_position_y = this.target_face_position_y;
                 this.face_position_z = this.target_face_position_z;
+                this.smile_rate = this.target_smile_rate;
             }
         } else {
             if (smooth_step == 0) {
@@ -726,7 +760,7 @@ public class ModelControl : MonoBehaviour {
                 this.step_face_position_x = (this.target_face_position_x - this.face_position_x) / smooth_level;
                 this.step_face_position_y = (this.target_face_position_y - this.face_position_y) / smooth_level;
                 this.step_face_position_z = (this.target_face_position_z - this.face_position_z) / smooth_level;
-
+                this.step_smile_rate = (this.target_smile_rate - this.smile_rate) / smooth_level;
             } else if (smooth_step >= smooth_level) {
                 goto skip_step;
             }
@@ -745,6 +779,7 @@ public class ModelControl : MonoBehaviour {
             this.face_position_x += this.step_face_position_x;
             this.face_position_y += this.step_face_position_y;
             this.face_position_z += this.step_face_position_z;
+            this.smile_rate += this.step_smile_rate;
 
             skip_step:;
         }
@@ -811,6 +846,11 @@ public class ModelControl : MonoBehaviour {
                 eye_closedness_fun = eye_closedness_right;
             } else {
                 eye_closedness_fun = eye_closedness_left;
+            }
+
+            eye_closedness_fun -= this.smile_rate;
+            if (eye_closedness_fun < 0.0f) {
+                eye_closedness_fun = 0.0f;
             }
 
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_CLOSE_LEFT, eye_closedness_left);
@@ -908,9 +948,12 @@ public class ModelControl : MonoBehaviour {
             }
 
             if (mouth_x > 4.0f) {
-                face__i__value = (mouth_x - 4.0f) * 4.0f;
+                face__i__value = (mouth_x - 4.0f) * 4.0f - this.smile_rate;
+
                 if (face__i__value > 100.0f) {
                     face__i__value = 100.0f;
+                } else if (face__i__value < 0.0f) {
+                    face__i__value = 0.0f;
                 }
             }
 
@@ -941,6 +984,16 @@ public class ModelControl : MonoBehaviour {
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_U, face__u__value);
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_O, face__o__value);
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.TEETH_SHORT_BOT, -face__o__value);
+        }
+    }
+
+    void update_expressions() {
+        SkinnedMeshRenderer face_mesh = this.face_mesh;
+        if (face_mesh != null) {
+            float smile_rate = this.smile_rate;
+            if (smile_rate > 0.0f) {
+                face_mesh.SetBlendShapeWeight((int)FACE_MESH.ALL_FUN, smile_rate);
+            }
         }
     }
 
@@ -985,6 +1038,7 @@ public class ModelControl : MonoBehaviour {
         this.update_eye_closedness();
         this.update_mouth_openness();
         this.update_arms();
+        this.update_expressions();
         if (this.enable_position_change) {
             this.update_position();
         }

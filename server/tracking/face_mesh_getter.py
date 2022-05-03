@@ -11,8 +11,8 @@ from .variables import SHOULD_DRAW
 
 
 mp_face_mesh = mediapipe.solutions.face_mesh
-mp_drawing = mediapipe.solutions.drawing_utils
-mp_drawing_styles = mediapipe.solutions.drawing_styles
+mediapipe_drawing = mediapipe.solutions.drawing_utils
+mediapipe_drawing_styles = mediapipe.solutions.drawing_styles
 
 
 def iter_face_meshes():
@@ -49,23 +49,23 @@ def iter_face_meshes():
                     
 
                     if (face_landmarks is not None):
-                        mp_drawing.draw_landmarks(
+                        mediapipe_drawing.draw_landmarks(
                             image = image,
                             landmark_list = face_landmarks,
                             connections = mp_face_mesh.FACEMESH_TESSELATION,
                             landmark_drawing_spec = None,
-                            connection_drawing_spec = mp_drawing_styles.get_default_face_mesh_tesselation_style()
+                            connection_drawing_spec = mediapipe_drawing_styles.get_default_face_mesh_tesselation_style()
                         )
                         
-                        mp_drawing.draw_landmarks(
+                        mediapipe_drawing.draw_landmarks(
                             image = image,
                             landmark_list = face_landmarks,
                             connections = mp_face_mesh.FACEMESH_CONTOURS,
                             landmark_drawing_spec = None,
-                            connection_drawing_spec = mp_drawing_styles.get_default_face_mesh_contours_style()
+                            connection_drawing_spec = mediapipe_drawing_styles.get_default_face_mesh_contours_style()
                         )
                         
-                        mp_drawing.draw_landmarks(
+                        mediapipe_drawing.draw_landmarks(
                             image = image,
                             landmark_list = face_landmarks,
                             connections = mp_face_mesh.FACEMESH_IRISES,

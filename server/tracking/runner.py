@@ -9,6 +9,7 @@ from .face_mesh_getter import iter_face_meshes
 from .head import get_head_x_rotation, get_head_y_rotation, get_head_z_rotation
 from .iris import accelerate_iris_left_x, accelerate_iris_right_x, get_left_iris_rotations, get_right_iris_rotations
 from .mouth_openness import get_mouth_openness
+from .smile import get_smile_rate
 from .smoothing import OneEuroSmoother1D
 from .variables import SHOULD_CONNECT
 
@@ -33,6 +34,7 @@ def run():
     face_position_y = 0.0
     face_position_z = 0.0
     
+    smile_rate = 0.0
     
     time = perf_counter()
     
@@ -57,6 +59,7 @@ def run():
     face_position_y_smoother = OneEuroSmoother1D(face_position_y, time)
     face_position_z_smoother = OneEuroSmoother1D(face_position_z, time)
     
+    smile_rate_smoother = OneEuroSmoother1D(smile_rate, time)
     
     while True:
         if SHOULD_CONNECT:
@@ -66,7 +69,6 @@ def run():
         
         for face_landmarks in iter_face_meshes():
             landmarks = face_landmarks.landmark
-            
             mouth_openness_x, mouth_openness_y = get_mouth_openness(landmarks)
             
             time = perf_counter()
@@ -148,6 +150,9 @@ def run():
                 else:
                     iris_right_y = iris_left_y
             
+            # Smile rate
+            smile_rate = get_smile_rate(landmarks)
+            
             # Accelerate irises
             
             iris_left_x = accelerate_iris_left_x(iris_left_x)
@@ -182,6 +187,8 @@ def run():
             face_position_y = face_position_y_smoother(face_position_y, time)
             face_position_z = face_position_z_smoother(face_position_z, time)
             
+            smile_rate = smile_rate_smoother(smile_rate, time)
+            
             if (socket is not None):
                 try:
                     socket.send((
@@ -189,8 +196,8 @@ def run():
                         f'{eye_closedness_left:.4f} {eye_closedness_right:.4f} '
                         f'{head_x:.4f} {head_y:.4f} {head_z:.4f} '
                         f'{mouth_openness_x:.4f} {mouth_openness_y:.4f} '
-                        f'{face_position_x:.4f} {face_position_y:.4f} {face_position_z:.4f}'
-                        
+                        f'{face_position_x:.4f} {face_position_y:.4f} {face_position_z:.4f} '
+                        f'{smile_rate:.4f}'
                     ).encode())
                 except BrokenPipeError:
                     break

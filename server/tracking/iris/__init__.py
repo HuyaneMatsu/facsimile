@@ -9,5 +9,5 @@ __all__ = (
     *helpers.__all__,
     *left.__all__,
     *right.__all__,
-    *utils.__all__,
+    *utils.__all__
 )
