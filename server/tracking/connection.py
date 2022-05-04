@@ -13,8 +13,11 @@ def try_connect_socket():
         try:
             socket.connect(ADDRESS)
         except ConnectionRefusedError:
-            sleep(0.4)
+            pass
         else:
             break
+        
+        sleep(0.4)
+        continue
     
     return socket

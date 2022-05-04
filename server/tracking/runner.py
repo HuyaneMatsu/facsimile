@@ -3,7 +3,7 @@ __all__ = ('run',)
 from time import perf_counter
 
 from .connection import try_connect_socket
-from .eye_closedness import get_left_eye_closedness, get_right_eye_closedness
+from .eye_openness import get_left_eye_openness, get_right_eye_openness
 from .eyebrow import get_eyebrow_liftedness
 from .face_position import get_face_position
 from .face_mesh_getter import iter_face_meshes
@@ -21,8 +21,8 @@ def run():
     iris_right_x = 0.0
     iris_right_y = 0.0
     
-    eye_closedness_left = 0.0
-    eye_closedness_right = 0.0
+    eye_openness_left = 0.0
+    eye_openness_right = 0.0
     
     head_x = 0.0
     head_y = 0.0
@@ -46,8 +46,8 @@ def run():
     iris_right_x_smoother = OneEuroSmoother1D(iris_right_x, time)
     iris_right_y_smoother = OneEuroSmoother1D(iris_right_y, time)
     
-    eye_closedness_left_smoother = OneEuroSmoother1D(eye_closedness_left, time, acceleration=2.5)
-    eye_closedness_right_smoother = OneEuroSmoother1D(eye_closedness_right, time, acceleration=2.5)
+    eye_openness_left_smoother = OneEuroSmoother1D(eye_openness_left, time, acceleration=2.5)
+    eye_openness_right_smoother = OneEuroSmoother1D(eye_openness_right, time, acceleration=2.5)
     
     head_x_smoother = OneEuroSmoother1D(head_x, time, acceleration=0.0)
     head_y_smoother = OneEuroSmoother1D(head_y, time, acceleration=0.0)
@@ -83,10 +83,10 @@ def run():
             face_position_x, face_position_y, face_position_z = get_face_position(landmarks)
             
             if head_x > 20.0:
-                eye_closedness_left = get_left_eye_closedness(landmarks)
-                eye_closedness_right = eye_closedness_left
+                eye_openness_left = get_left_eye_openness(landmarks)
+                eye_openness_right = eye_openness_left
                 
-                if eye_closedness_left:
+                if eye_openness_left < 40.0:
                     iris_left_x = 0.0
                     iris_left_y = 0.0
                     iris_right_x = 0.0
@@ -102,10 +102,10 @@ def run():
             
             elif head_x < -20.0:
 
-                eye_closedness_right = get_right_eye_closedness(landmarks)
-                eye_closedness_left = eye_closedness_right
+                eye_openness_right = get_right_eye_openness(landmarks)
+                eye_openness_left = eye_openness_right
                 
-                if eye_closedness_right:
+                if eye_openness_right < 40.0:
                     iris_left_x = 0.0
                     iris_left_y = 0.0
                     iris_right_x = 0.0
@@ -121,10 +121,10 @@ def run():
                 
             
             else:
-                eye_closedness_left = get_left_eye_closedness(landmarks)
-                eye_closedness_right = get_right_eye_closedness(landmarks)
+                eye_openness_left = get_left_eye_openness(landmarks)
+                eye_openness_right = get_right_eye_openness(landmarks)
                 
-                if eye_closedness_left:
+                if eye_openness_left < 40.0:
                     iris_left_x = 0.0
                     iris_left_y = 0.0
                 else:
@@ -132,7 +132,7 @@ def run():
                     if (iris_ratio_left is not None):
                         iris_left_x, iris_left_y = iris_ratio_left
                 
-                if eye_closedness_right:
+                if eye_openness_right < 40.0:
                     iris_right_x = 0.0
                     iris_right_y = 0.0
                 else:
@@ -180,8 +180,8 @@ def run():
             iris_right_x = iris_right_x_smoother(iris_right_x, time)
             iris_right_y = iris_right_y_smoother(iris_right_y, time)
             
-            eye_closedness_left = eye_closedness_left_smoother(eye_closedness_left, time)
-            eye_closedness_right = eye_closedness_right_smoother(eye_closedness_right, time)
+            eye_openness_left = eye_openness_left_smoother(eye_openness_left, time)
+            eye_openness_right = eye_openness_right_smoother(eye_openness_right, time)
             
             
             mouth_openness_x = mouth_openness_x_smoother(mouth_openness_x, time)
@@ -198,7 +198,7 @@ def run():
                 try:
                     socket.send((
                         f'{iris_left_x:.4f} {iris_left_y:.4f} {iris_right_x:.4f} {iris_right_y:.4f} '
-                        f'{eye_closedness_left:.4f} {eye_closedness_right:.4f} '
+                        f'{eye_openness_left:.4f} {eye_openness_right:.4f} '
                         f'{head_x:.4f} {head_y:.4f} {head_z:.4f} '
                         f'{mouth_openness_x:.4f} {mouth_openness_y:.4f} '
                         f'{face_position_x:.4f} {face_position_y:.4f} {face_position_z:.4f} '

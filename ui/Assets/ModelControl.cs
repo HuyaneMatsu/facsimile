@@ -74,6 +74,7 @@ enum FACE_MESH {
     TEETH_SHORT_BOT
 }
 
+
 public static class BODY_PART_NAME {
     public const string HIPS = "J_Bip_C_Hips";
     public const string SPINE = "J_Bip_C_Spine";
@@ -256,10 +257,10 @@ public class ModelControl : MonoBehaviour {
     [Range(-10.0f, +10.0f)]
     public float iris_right_y = 0.0f;
 
-    [Range(+0.0f, +70.0f)]
-    public float eye_closedness_left = 0.0f;
-    [Range(+0.0f, +70.0f)]
-    public float eye_closedness_right = 0.0f;
+    [Range(+0.0f, +100.0f)]
+    public float eye_openness_left = 0.0f;
+    [Range(+0.0f, 100.0f)]
+    public float eye_openness_right = 0.0f;
 
     [Range(-90.0f, +90.0f)]
     public float head_x = 0.0f;
@@ -290,8 +291,8 @@ public class ModelControl : MonoBehaviour {
     private float target_iris_left_y = 0.0f;
     private float target_iris_right_x = 0.0f;
     private float target_iris_right_y = 0.0f;
-    private float target_eye_closedness_left = 0.0f;
-    private float target_eye_closedness_right = 0.0f;
+    private float target_eye_openness_left = 0.0f;
+    private float target_eye_openness_right = 0.0f;
     private float target_head_x = 0.0f;
     private float target_head_y = 0.0f;
     private float target_head_z = 0.0f;
@@ -307,8 +308,8 @@ public class ModelControl : MonoBehaviour {
     private float step_iris_left_y = 0.0f;
     private float step_iris_right_x = 0.0f;
     private float step_iris_right_y = 0.0f;
-    private float step_eye_closedness_left = 0.0f;
-    private float step_eye_closedness_right = 0.0f;
+    private float step_eye_openness_left = 0.0f;
+    private float step_eye_openness_right = 0.0f;
     private float step_head_x = 0.0f;
     private float step_head_y = 0.0f;
     private float step_head_z = 0.0f;
@@ -319,6 +320,10 @@ public class ModelControl : MonoBehaviour {
     private float step_face_position_z = 0.0f;
     private float step_smile_ratio = 0.0f;
     private float step_eyebrow_liftedness = 0.0f;
+
+    // eye close
+    private bool is_left_eye_closing = true;
+    private bool is_right_eye_closing = true;
 
     // system
     /* Unused for now */
@@ -333,6 +338,7 @@ public class ModelControl : MonoBehaviour {
     private float expression_eye_close_right = 0.0f;
     private float expression_eye_fun = 0.0f;
     private float expression_eye_surprised = 0.0f;
+    private float expression_eye_joy = 0.0f;
 
     private float expression_eyebrow_fun = 0.0f;
     private float expression_eyebrow_surprised = 0.0f;
@@ -343,6 +349,7 @@ public class ModelControl : MonoBehaviour {
     private float expression_mouth_o = 0.0f;
     private float expression_mouth_fun = 0.0f;
     private float expression_mouth_surprised = 0.0f;
+    private float expression_mouth_joy = 0.0f;
 
     private float expression_teeth_short_bot = 0.0f;
 
@@ -421,8 +428,8 @@ public class ModelControl : MonoBehaviour {
 
         this.target_iris_right_y = float.Parse(floats[3]);
 
-        this.target_eye_closedness_left = float.Parse(floats[4]);
-        this.target_eye_closedness_right = float.Parse(floats[5]);
+        this.target_eye_openness_left = float.Parse(floats[4]);
+        this.target_eye_openness_right = float.Parse(floats[5]);
 
         this.target_head_x = float.Parse(floats[6]);
         this.target_head_y = float.Parse(floats[7]) - this.camera_angle_vertical;
@@ -752,8 +759,8 @@ public class ModelControl : MonoBehaviour {
                 this.iris_left_y = this.target_iris_left_y;
                 this.iris_right_x = this.target_iris_right_x;
                 this.iris_right_y = this.target_iris_right_y;
-                this.eye_closedness_left = this.target_eye_closedness_left;
-                this.eye_closedness_right = this.target_eye_closedness_right;
+                this.eye_openness_left = this.target_eye_openness_left;
+                this.eye_openness_right = this.target_eye_openness_right;
                 this.head_x = this.target_head_x;
                 this.head_y = this.target_head_y;
                 this.head_z = this.target_head_z;
@@ -771,11 +778,11 @@ public class ModelControl : MonoBehaviour {
                 this.step_iris_left_y = (this.target_iris_left_y - this.iris_left_y) / smooth_level;
                 this.step_iris_right_x = (this.target_iris_right_x - this.iris_right_x) / smooth_level;
                 this.step_iris_right_y = (this.target_iris_right_y - this.iris_right_y) / smooth_level;
-                this.step_eye_closedness_left = (
-                    (this.target_eye_closedness_left - this.eye_closedness_left) / smooth_level
+                this.step_eye_openness_left = (
+                    (this.target_eye_openness_left - this.eye_openness_left) / smooth_level
                 );
-                this.step_eye_closedness_right = (
-                    (this.target_eye_closedness_right - this.eye_closedness_right) / smooth_level
+                this.step_eye_openness_right = (
+                    (this.target_eye_openness_right - this.eye_openness_right) / smooth_level
                 );
                 this.step_head_x = (this.target_head_x - this.head_x) / smooth_level;
                 this.step_head_y = (this.target_head_y - this.head_y) / smooth_level;
@@ -795,8 +802,8 @@ public class ModelControl : MonoBehaviour {
             this.iris_left_y += this.step_iris_left_y;
             this.iris_right_x += this.step_iris_right_x;
             this.iris_right_y += this.step_iris_right_y;
-            this.eye_closedness_left += this.step_eye_closedness_left;
-            this.eye_closedness_right += this.step_eye_closedness_right;
+            this.eye_openness_left += this.step_eye_openness_left;
+            this.eye_openness_right += this.step_eye_openness_right;
             this.head_x += this.step_head_x;
             this.head_y += this.step_head_y;
             this.head_z += this.step_head_z;
@@ -962,10 +969,73 @@ public class ModelControl : MonoBehaviour {
 
 
     void set_eye_expressions() {
-        this.expression_eye_close_left = this.eye_closedness_left;
-        this.expression_eye_close_right = this.eye_closedness_right;
+        float eye_openness_left = this.target_eye_openness_left;
+        float eye_openness_right = this.target_eye_openness_right;
+        bool is_left_eye_closing = this.is_left_eye_closing;
+        bool is_right_eye_closing = this.is_right_eye_closing;
+
+        bool should_close_left;
+        bool should_close_right;
+
+        // Detect whether we should close the eyes
+        if (
+            (eye_openness_left <= 10.0f) ||
+            (
+                (eye_openness_left <= 40.0f) &&
+                (
+                    (eye_openness_right <= 10.0f) ||
+                    (is_left_eye_closing) ||
+                    (is_right_eye_closing)
+                )
+            )
+        ) {
+            should_close_left = true;
+        } else {
+            should_close_left = false;
+        }
+
+        if (
+            (eye_openness_right <= 10.0f) ||
+            (
+                (eye_openness_right <= 40.0f) &&
+                (
+                    (eye_openness_left <= 10.0f) ||
+                    (is_left_eye_closing) ||
+                    (is_right_eye_closing)
+                )
+            )
+        ) {
+            should_close_right = true;
+        } else {
+            should_close_right = false;
+        }
+
+        // Move the eyes
+
+        float expression_eye_close_left = this.expression_eye_close_left;
+        float expression_eye_close_right = this.expression_eye_close_right;
+
+        if (should_close_left) {
+            expression_eye_close_left = Math.Min(expression_eye_close_left + 10.0f, 70.0f);
+        } else {
+            expression_eye_close_left = Math.Max(expression_eye_close_left - 10.0f, 0.0f);
+        }
+
+        if (should_close_right) {
+            expression_eye_close_right = Math.Min(expression_eye_close_right + 10.0f, 70.0f);
+        } else {
+            expression_eye_close_right = Math.Max(expression_eye_close_right - 10.0f, 0.0f);
+        }
+
+        this.expression_eye_close_left = expression_eye_close_left;
+        this.expression_eye_close_right = expression_eye_close_right;
+
+        // Store state
+        this.is_left_eye_closing = should_close_left;
+        this.is_right_eye_closing = should_close_right;
     }
-    
+
+
     void set_mouth_expressions() {
         float mouth_x = this.mouth_openness_x - this.default_mouth_openness_horizontal;
         float mouth_y = this.mouth_openness_y - this.default_mouth_openness_vertical;
@@ -1098,6 +1168,54 @@ public class ModelControl : MonoBehaviour {
         }
     }
 
+    void update_joy() {
+        float smile_ratio = this.smile_ratio;
+        if (smile_ratio <= 0.0f) {
+            this.expression_mouth_joy = 0.0f;
+            this.expression_eye_joy = 0.0f;
+
+        } else {
+            float expression_mouth_a = this.expression_mouth_a;
+            float expression_mouth_o = this.expression_mouth_o;
+            float expression_mouth_i = this.expression_mouth_i;
+
+            float mouth_openness = (expression_mouth_a + expression_mouth_o) / 2.0f;
+            float joy = Math.Min(mouth_openness, smile_ratio * 3.0f);
+
+            expression_mouth_o -= (joy * 2.0f);
+            if (expression_mouth_o < 0.0f) {
+                expression_mouth_a += expression_mouth_o;
+                if (expression_mouth_a < 0.0f) {
+                    expression_mouth_a = 0.0f;
+                }
+                expression_mouth_o = 0.0f;
+            }
+
+            expression_mouth_i = Math.Max(expression_mouth_i - joy, 0.0f);
+
+            this.expression_mouth_a = expression_mouth_a;
+            this.expression_mouth_o = expression_mouth_o;
+            this.expression_mouth_i = expression_mouth_i;
+            this.expression_mouth_joy = joy;
+
+            float eye_openness = (this.eye_openness_left + this.eye_openness_right);
+            if (eye_openness > 160.0f) {
+                this.expression_eye_joy = 0.0f;
+            } else {
+                float eye_joy = Math.Min((160.0f - eye_openness) * 2.0f, joy * 1.5f);
+
+                if (eye_joy > 70.0f) {
+                    eye_joy = 70.0f;
+                }
+                
+                this.expression_eye_joy = eye_joy;
+
+                this.expression_eye_close_left = Math.Max(this.expression_eye_close_left - eye_joy, 0.0f);
+                this.expression_eye_close_right = Math.Max(this.expression_eye_close_right - eye_joy, 0.0f);
+            }
+        }
+    }
+
     void update_face() {
         SkinnedMeshRenderer face_mesh = this.face_mesh;
         if (face_mesh != null) {
@@ -1105,6 +1223,7 @@ public class ModelControl : MonoBehaviour {
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_CLOSE_RIGHT, this.expression_eye_close_right);
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_FUN, this.expression_eye_fun);
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_SURPRISED, this.expression_eye_surprised);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_JOY, this.expression_eye_joy);
 
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYEBROW_FUN, this.expression_eyebrow_fun);
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYEBROW_SURPRISED, this.expression_eyebrow_surprised);
@@ -1115,6 +1234,7 @@ public class ModelControl : MonoBehaviour {
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_O, this.expression_mouth_o);
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_O, this.expression_mouth_o);
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_FUN, this.expression_mouth_fun);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_JOY, this.expression_mouth_joy);
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_SURPRISED, this.expression_mouth_surprised);
 
             face_mesh.SetBlendShapeWeight((int)FACE_MESH.TEETH_SHORT_BOT, this.expression_teeth_short_bot);
@@ -1137,6 +1257,7 @@ public class ModelControl : MonoBehaviour {
 
         this.update_fun();
         this.update_surprised();
+        this.update_joy();
 
         this.update_face();
 
