@@ -7,7 +7,7 @@ from ..face_mesh_points import (
 )
 from ..helpers import get_point_difference_3d
 
-from .constants import OPENNESS_MULTIPLIER_X, OPENNESS_MULTIPLIER_Y, OPENNESS_MAX
+from .constants import MOUTH_OPENNESS_MULTIPLIER_X, MOUTH_OPENNESS_MULTIPLIER_Y, MOUTH_OPENNESS_MAX
 
 
 def get_mouth_openness(landmarks):
@@ -33,13 +33,13 @@ def get_mouth_openness(landmarks):
         )
     )
     
-    mouth_openness_x = mouth_difference_x / most_difference * OPENNESS_MULTIPLIER_X
-    mouth_openness_y = mouth_difference_y / most_difference * OPENNESS_MULTIPLIER_Y
+    mouth_openness_x = mouth_difference_x / most_difference * MOUTH_OPENNESS_MULTIPLIER_X
+    mouth_openness_y = mouth_difference_y / most_difference * MOUTH_OPENNESS_MULTIPLIER_Y
     
-    if mouth_openness_x > OPENNESS_MAX:
-        mouth_openness_x = OPENNESS_MAX
+    if mouth_openness_x > MOUTH_OPENNESS_MAX:
+        mouth_openness_x = MOUTH_OPENNESS_MAX
     
-    if mouth_openness_y > OPENNESS_MAX:
-        mouth_openness_y = OPENNESS_MAX
+    if mouth_openness_y > MOUTH_OPENNESS_MAX:
+        mouth_openness_y = MOUTH_OPENNESS_MAX
     
     return mouth_openness_x, mouth_openness_y

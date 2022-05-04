@@ -281,7 +281,10 @@ public class ModelControl : MonoBehaviour {
     public float face_position_z = 0.0f;
 
     [Range(0.0f, 100.0f)]
-    public float smile_rate = 0.0f;
+    public float smile_ratio = 0.0f;
+    [Range(0.0f, 100.0f)]
+    public float eyebrow_liftedness = 0.0f;
+
 
     private float target_iris_left_x = 0.0f;
     private float target_iris_left_y = 0.0f;
@@ -297,7 +300,8 @@ public class ModelControl : MonoBehaviour {
     private float target_face_position_x = 0.0f;
     private float target_face_position_y = 0.0f;
     private float target_face_position_z = 0.0f;
-    private float target_smile_rate = 0.0f;
+    private float target_smile_ratio = 0.0f;
+    private float target_eyebrow_liftedness = 0.0f;
 
     private float step_iris_left_x = 0.0f;
     private float step_iris_left_y = 0.0f;
@@ -313,7 +317,8 @@ public class ModelControl : MonoBehaviour {
     private float step_face_position_x = 0.0f;
     private float step_face_position_y = 0.0f;
     private float step_face_position_z = 0.0f;
-    private float step_smile_rate = 0.0f;
+    private float step_smile_ratio = 0.0f;
+    private float step_eyebrow_liftedness = 0.0f;
 
     // system
     /* Unused for now */
@@ -322,6 +327,24 @@ public class ModelControl : MonoBehaviour {
     /* This will be changed at startup, no worries */
     private float head_size = 1.0f;
     private Vector3 hips_position = new Vector3(0.0f, 0.0f, 0.0f);
+
+    // Expressions
+    private float expression_eye_close_left = 0.0f;
+    private float expression_eye_close_right = 0.0f;
+    private float expression_eye_fun = 0.0f;
+    private float expression_eye_surprised = 0.0f;
+
+    private float expression_eyebrow_fun = 0.0f;
+    private float expression_eyebrow_surprised = 0.0f;
+    
+    private float expression_mouth_a = 0.0f;
+    private float expression_mouth_i = 0.0f;
+    private float expression_mouth_u = 0.0f;
+    private float expression_mouth_o = 0.0f;
+    private float expression_mouth_fun = 0.0f;
+    private float expression_mouth_surprised = 0.0f;
+
+    private float expression_teeth_short_bot = 0.0f;
 
     // Connection Methods
     
@@ -412,7 +435,8 @@ public class ModelControl : MonoBehaviour {
         this.target_face_position_x = float.Parse(floats[12]);
         this.target_face_position_z = float.Parse(floats[13]);
 
-        this.target_smile_rate = float.Parse(floats[14]);
+        this.target_smile_ratio = float.Parse(floats[14]);
+        this.target_eyebrow_liftedness = float.Parse(floats[15]);
 
         // Reset smooth step
         this.smooth_step = 0;
@@ -738,7 +762,8 @@ public class ModelControl : MonoBehaviour {
                 this.face_position_x = this.target_face_position_x;
                 this.face_position_y = this.target_face_position_y;
                 this.face_position_z = this.target_face_position_z;
-                this.smile_rate = this.target_smile_rate;
+                this.smile_ratio = this.target_smile_ratio;
+                this.eyebrow_liftedness = this.target_eyebrow_liftedness;
             }
         } else {
             if (smooth_step == 0) {
@@ -760,7 +785,8 @@ public class ModelControl : MonoBehaviour {
                 this.step_face_position_x = (this.target_face_position_x - this.face_position_x) / smooth_level;
                 this.step_face_position_y = (this.target_face_position_y - this.face_position_y) / smooth_level;
                 this.step_face_position_z = (this.target_face_position_z - this.face_position_z) / smooth_level;
-                this.step_smile_rate = (this.target_smile_rate - this.smile_rate) / smooth_level;
+                this.step_smile_ratio = (this.target_smile_ratio - this.smile_ratio) / smooth_level;
+                this.step_eyebrow_liftedness = (this.target_eyebrow_liftedness - this.eyebrow_liftedness) / smooth_level;
             } else if (smooth_step >= smooth_level) {
                 goto skip_step;
             }
@@ -779,7 +805,8 @@ public class ModelControl : MonoBehaviour {
             this.face_position_x += this.step_face_position_x;
             this.face_position_y += this.step_face_position_y;
             this.face_position_z += this.step_face_position_z;
-            this.smile_rate += this.step_smile_rate;
+            this.smile_ratio += this.step_smile_ratio;
+            this.eyebrow_liftedness += this.step_eyebrow_liftedness;
 
             skip_step:;
         }
@@ -805,7 +832,7 @@ public class ModelControl : MonoBehaviour {
         return target_value;
     }
 
-    void update_eyes() {
+    void update_irises() {
         GameObject head = this.head;
         GameObject eye_right = this.eye_right;
         GameObject eye_left = this.eye_left;
@@ -834,31 +861,8 @@ public class ModelControl : MonoBehaviour {
             head.transform.rotation = neck.transform.rotation * rotation;
         }
     }
-
-    void update_eye_closedness() {
-        SkinnedMeshRenderer face_mesh = this.face_mesh;
-        if (face_mesh != null) {
-            float eye_closedness_left = this.eye_closedness_left;
-            float eye_closedness_right = this.eye_closedness_right;
-            float eye_closedness_fun;
-
-            if (eye_closedness_right > eye_closedness_left) {
-                eye_closedness_fun = eye_closedness_right;
-            } else {
-                eye_closedness_fun = eye_closedness_left;
-            }
-
-            eye_closedness_fun -= this.smile_rate;
-            if (eye_closedness_fun < 0.0f) {
-                eye_closedness_fun = 0.0f;
-            }
-
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_CLOSE_LEFT, eye_closedness_left);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_CLOSE_RIGHT, eye_closedness_right);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_FUN, eye_closedness_fun);
-        }
-    }
-
+    
+    
     void update_arms() {
         GameObject shoulder_right = this.shoulder_right;
         GameObject shoulder_left = this.shoulder_left;
@@ -922,81 +926,7 @@ public class ModelControl : MonoBehaviour {
             );
         }
     }
-
-    void update_mouth_openness() {
-        SkinnedMeshRenderer face_mesh = this.face_mesh;
-        if (face_mesh != null) {
-            float mouth_x = this.mouth_openness_x - this.default_mouth_openness_horizontal;
-            float mouth_y = this.mouth_openness_y - this.default_mouth_openness_vertical;
-
-            float face__a__value = 0.0f;
-            float face__i__value = 0.0f;
-            float face__u__value = 0.0f;
-            float face__o__value = 0.0f;
-
-            if (mouth_y > 6.0f) {
-                face__a__value = (mouth_y - 6.0f) * 2.0f;
-
-                if (face__a__value > 100.0f) {
-                    face__o__value = face__a__value - 100.0f;
-                    face__a__value = 100.0f;
-
-                    if (face__o__value > 100.0f) {
-                        face__o__value = 100.0f;
-                    }
-                }
-            }
-
-            if (mouth_x > 4.0f) {
-                face__i__value = (mouth_x - 4.0f) * 4.0f - this.smile_rate;
-
-                if (face__i__value > 100.0f) {
-                    face__i__value = 100.0f;
-                } else if (face__i__value < 0.0f) {
-                    face__i__value = 0.0f;
-                }
-            }
-
-            if ((mouth_x < -4.0f) && (mouth_y > 6.0f)){
-                face__u__value = (-mouth_x - 4.0f) * 4.0f;
-                if (face__u__value > 100.0f) {
-                    face__u__value = 100.0f;
-                }
-
-                /* When u value is too high the face might overflow at places, so we will reduce a and o values */
-                if (face__u__value > 50.0f) {
-                    float openness_reduction = (face__u__value - 50.0f) * 0.5f;
-
-                    face__a__value -= openness_reduction;
-                    if (face__a__value < 0.0f) {
-                        face__a__value = 0.0f;
-                    }
-
-                    face__o__value -= openness_reduction;
-                    if (face__o__value < 0.0f) {
-                        face__o__value = 0.0f;
-                    }
-                }
-            }
-
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_A, face__a__value);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_I, face__i__value);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_U, face__u__value);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_O, face__o__value);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.TEETH_SHORT_BOT, -face__o__value);
-        }
-    }
-
-    void update_expressions() {
-        SkinnedMeshRenderer face_mesh = this.face_mesh;
-        if (face_mesh != null) {
-            float smile_rate = this.smile_rate;
-            if (smile_rate > 0.0f) {
-                face_mesh.SetBlendShapeWeight((int)FACE_MESH.ALL_FUN, smile_rate);
-            }
-        }
-    }
-
+    
     void update_position() {
         GameObject body_root = this.body_root;
         GameObject hips = this.hips;
@@ -1030,15 +960,187 @@ public class ModelControl : MonoBehaviour {
         }
     }
 
+
+    void set_eye_expressions() {
+        this.expression_eye_close_left = this.eye_closedness_left;
+        this.expression_eye_close_right = this.eye_closedness_right;
+    }
+    
+    void set_mouth_expressions() {
+        float mouth_x = this.mouth_openness_x - this.default_mouth_openness_horizontal;
+        float mouth_y = this.mouth_openness_y - this.default_mouth_openness_vertical;
+            
+        float expression_mouth_a = 0.0f;
+        float expression_mouth_i = 0.0f;
+        float expression_mouth_u = 0.0f;
+        float expression_mouth_o = 0.0f;
+
+        if (mouth_y > 6.0f) {
+            expression_mouth_a = (mouth_y - 6.0f) * 2.0f;
+
+            if (expression_mouth_a > 100.0f) {
+                expression_mouth_o = expression_mouth_a - 100.0f;
+                expression_mouth_a = 100.0f;
+
+                if (expression_mouth_o > 100.0f) {
+                    expression_mouth_o = 100.0f;
+                }
+            }
+        }
+
+        if (mouth_x > 4.0f) {
+            expression_mouth_i = (mouth_x - 4.0f) * 4.0f;
+
+            if (expression_mouth_i > 100.0f) {
+                expression_mouth_i = 100.0f;
+            }
+        }
+
+        if ((mouth_x < -4.0f) && (mouth_y > 6.0f)){
+            expression_mouth_u = (-mouth_x - 4.0f) * 4.0f;
+            if (expression_mouth_u > 100.0f) {
+                expression_mouth_u = 100.0f;
+            }
+
+            /* When u value is too high the face might overflow at places, so we will reduce a and o values */
+            if (expression_mouth_u > 50.0f) {
+                float openness_reduction = (expression_mouth_u - 50.0f) * 0.5f;
+
+                expression_mouth_a -= openness_reduction;
+                if (expression_mouth_a < 0.0f) {
+                    expression_mouth_a = 0.0f;
+                }
+
+                expression_mouth_o -= openness_reduction;
+                if (expression_mouth_o < 0.0f) {
+                    expression_mouth_o = 0.0f;
+                }
+            }
+        }
+
+        this.expression_mouth_a = expression_mouth_a;
+        this.expression_mouth_i = expression_mouth_i;
+        this.expression_mouth_u = expression_mouth_u;
+        this.expression_mouth_o = expression_mouth_o;
+        this.expression_teeth_short_bot = -expression_mouth_o;
+    }
+
+
+    void update_fun() {
+        float smile_ratio = this.smile_ratio;
+
+        // Cap on eye fun with blinkage
+        float expression_eye_close_left = this.expression_eye_close_left;
+        float expression_eye_close_right = this.expression_eye_close_right;
+
+        float expression_eye_fun;
+        if (expression_eye_close_left > expression_eye_close_right) {
+            expression_eye_fun = expression_eye_close_left;
+        } else {
+            expression_eye_fun = expression_eye_close_right;
+        }
+
+        if (smile_ratio > expression_eye_fun) {
+            expression_eye_fun = smile_ratio;
+        }
+        this.expression_eye_fun = expression_eye_fun;
+
+        // Cap mouth i
+        float expression_mouth_i = this.expression_mouth_i - smile_ratio;
+        if (expression_mouth_i < 0.0f) {
+            expression_mouth_i = 0.0f;
+        }
+        this.expression_mouth_i = expression_mouth_i;
+
+        // Eyebrows
+        this.expression_eyebrow_fun = smile_ratio;
+
+        // Mouth
+        this.expression_mouth_fun = smile_ratio;
+    }
+    
+    void update_surprised() {
+        float eyebrow_liftedness = this.eyebrow_liftedness;
+        // Update eyebrow even if we don not do `o` face
+        this.expression_eyebrow_surprised = eyebrow_liftedness;
+
+        float expression_mouth_u = this.expression_mouth_u;
+        if (expression_mouth_u <= 0.0f) {
+            this.expression_eye_surprised = 0.0f;
+            this.expression_mouth_surprised = 0.0f;
+        } else {
+
+            eyebrow_liftedness = Math.Min(eyebrow_liftedness, expression_mouth_u * 2.0f);
+
+            // eye
+            this.expression_eye_surprised = eyebrow_liftedness;
+
+
+            // Mouth - Convert excess a to expression_mouth_surprised
+            float expression_mouth_a = this.expression_mouth_a;
+            float expression_mouth_o = this.expression_mouth_o;
+            float expression_mouth_surprised;
+
+            // reduce a face
+            expression_mouth_surprised = Math.Min(eyebrow_liftedness, expression_mouth_a);
+
+            expression_mouth_a -= expression_mouth_surprised;
+
+            // Reduce o face
+            expression_mouth_o -= expression_mouth_surprised * 0.5f;
+            if (expression_mouth_o < 0.0f) {
+                expression_mouth_o = 0.0f;
+            }
+
+            this.expression_mouth_surprised = expression_mouth_surprised;
+            this.expression_mouth_a = expression_mouth_a;
+            this.expression_mouth_o = expression_mouth_o;
+        }
+    }
+
+    void update_face() {
+        SkinnedMeshRenderer face_mesh = this.face_mesh;
+        if (face_mesh != null) {
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_CLOSE_LEFT, this.expression_eye_close_left);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_CLOSE_RIGHT, this.expression_eye_close_right);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_FUN, this.expression_eye_fun);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_SURPRISED, this.expression_eye_surprised);
+
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYEBROW_FUN, this.expression_eyebrow_fun);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYEBROW_SURPRISED, this.expression_eyebrow_surprised);
+
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_A, this.expression_mouth_a);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_I, this.expression_mouth_i);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_U, this.expression_mouth_u);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_O, this.expression_mouth_o);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_O, this.expression_mouth_o);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_FUN, this.expression_mouth_fun);
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_SURPRISED, this.expression_mouth_surprised);
+
+            face_mesh.SetBlendShapeWeight((int)FACE_MESH.TEETH_SHORT_BOT, this.expression_teeth_short_bot);
+        }
+    }
+
+
+
+
     // Update is called once per frame
     void Update() {
         this.smoothing_step();
         this.update_head();
-        this.update_eyes();
-        this.update_eye_closedness();
-        this.update_mouth_openness();
+        this.update_irises();
         this.update_arms();
-        this.update_expressions();
+        
+        // Face
+        this.set_eye_expressions();
+        this.set_mouth_expressions();
+
+        this.update_fun();
+        this.update_surprised();
+
+        this.update_face();
+
+        // Body
         if (this.enable_position_change) {
             this.update_position();
         }

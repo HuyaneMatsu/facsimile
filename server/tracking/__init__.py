@@ -1,4 +1,5 @@
 from .eye_closedness import *
+from .eyebrow import *
 from .face_position import *
 from .head import *
 from .iris import *
@@ -16,6 +17,7 @@ from .variables import *
 
 __all__ = (
     *eye_closedness.__all__,
+    *eyebrow.__all__,
     *face_position.__all__,
     *head.__all__,
     *iris.__all__,
