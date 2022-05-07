@@ -1,5 +1,6 @@
+from .expression import *
 from .eye_openness import *
-from .eyebrow import *
+from .eyebrow_liftedness import *
 from .face_position import *
 from .head import *
 from .iris import *
@@ -15,9 +16,11 @@ from .helpers import *
 from .runner import *
 from .variables import *
 
+
 __all__ = (
+    *expression.__all__,
     *eye_openness.__all__,
-    *eyebrow.__all__,
+    *eyebrow_liftedness.__all__,
     *face_position.__all__,
     *head.__all__,
     *iris.__all__,

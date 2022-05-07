@@ -1,14 +1,13 @@
 __all__ = ('iter_face_meshes',)
 
-import sys
+from time import perf_counter
 
-from cv2 import (
-    CAP_PROP_FPS as CAPTURE_PROPERTY__FPS, VideoCapture, flip, imshow as show_image, waitKey as wait_for_key_press
-)
+from cv2 import flip, imshow as show_image, waitKey as wait_for_key_press
+
 import mediapipe
 
 from .variables import SHOULD_DRAW
-
+from .capture import CaptureThread
 
 mp_face_mesh = mediapipe.solutions.face_mesh
 mediapipe_drawing = mediapipe.solutions.drawing_utils
@@ -16,8 +15,7 @@ mediapipe_drawing_styles = mediapipe.solutions.drawing_styles
 
 
 def iter_face_meshes():
-    camera = VideoCapture(0)
-    camera.set(CAPTURE_PROPERTY__FPS, 30)
+    capture_thread = CaptureThread()
     
     try:
         with mp_face_mesh.FaceMesh(
@@ -27,14 +25,11 @@ def iter_face_meshes():
             min_tracking_confidence = 0.5,
         ) as face_mesh:
             while True:
-                success, image = camera.read()
                 
-                if not success:
-                    sys.stderr.write('Ignoring empty camera frame.')
-                    continue
+                frame = capture_thread.read_frame()
                 
-                image.flags.writeable = False
-                results = face_mesh.process(image)
+                frame.flags.writeable = False
+                results = face_mesh.process(frame)
                 
                 multi_face_landmarks = results.multi_face_landmarks
                 if (multi_face_landmarks is None):
@@ -42,15 +37,14 @@ def iter_face_meshes():
                 else:
                     face_landmarks = multi_face_landmarks[0]
                     
-                    yield face_landmarks
+                    yield face_landmarks, frame
                 
                 if SHOULD_DRAW:
-                    image.flags.writeable = True
+                    frame.flags.writeable = True
                     
-
                     if (face_landmarks is not None):
                         mediapipe_drawing.draw_landmarks(
-                            image = image,
+                            image = frame,
                             landmark_list = face_landmarks,
                             connections = mp_face_mesh.FACEMESH_TESSELATION,
                             landmark_drawing_spec = None,
@@ -58,7 +52,7 @@ def iter_face_meshes():
                         )
                         
                         mediapipe_drawing.draw_landmarks(
-                            image = image,
+                            image = frame,
                             landmark_list = face_landmarks,
                             connections = mp_face_mesh.FACEMESH_CONTOURS,
                             landmark_drawing_spec = None,
@@ -66,17 +60,18 @@ def iter_face_meshes():
                         )
                         
                         mediapipe_drawing.draw_landmarks(
-                            image = image,
+                            image = frame,
                             landmark_list = face_landmarks,
                             connections = mp_face_mesh.FACEMESH_IRISES,
                             landmark_drawing_spec = None,
                         )
                     
-                    image = flip(image, 1)
-                    show_image('Face Mesh', image)
+                    frame = flip(frame, 1)
+                    show_image('Face Mesh', frame)
                     
                     if wait_for_key_press(1) & 0xFF == b'q'[0]:
                         return
     
     finally:
-        camera.release()
+        capture_thread.cancel()
+        capture_thread.join()

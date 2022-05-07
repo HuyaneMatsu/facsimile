@@ -3,8 +3,9 @@ __all__ = ('run',)
 from time import perf_counter
 
 from .connection import try_connect_socket
+from .expression import detect_expressions
 from .eye_openness import get_left_eye_openness, get_right_eye_openness
-from .eyebrow import get_eyebrow_liftedness
+from .eyebrow_liftedness import get_eyebrow_liftedness
 from .face_position import get_face_position
 from .face_mesh_getter import iter_face_meshes
 from .head import get_head_x_rotation, get_head_y_rotation, get_head_z_rotation
@@ -13,6 +14,7 @@ from .mouth_openness import get_mouth_openness
 from .smile import get_smile_ratio
 from .smoothing import OneEuroSmoother1D
 from .variables import SHOULD_CONNECT
+from .constants import PACKET_TYPE_MOVEMENT, PACKET_TYPE_EXPRESSION
 
 
 def run():
@@ -37,6 +39,14 @@ def run():
     
     smile_ratio = 0.0
     eyebrow_liftedness = 0.0
+    
+    
+    happiness = 0.0
+    sadness = 0.0
+    surprise = 0.0
+    fear = 0.0
+    disgust = 0.0
+    anger = 0.0
     
     time = perf_counter()
     
@@ -64,17 +74,26 @@ def run():
     smile_ratio_smoother = OneEuroSmoother1D(smile_ratio, time)
     eyebrow_liftedness_smoother = OneEuroSmoother1D(eyebrow_liftedness, time)
     
+    
+    happiness_smoother = OneEuroSmoother1D(happiness, time)
+    sadness_smoother = OneEuroSmoother1D(sadness, time)
+    surprise_smoother = OneEuroSmoother1D(surprise, time)
+    fear_smoother = OneEuroSmoother1D(fear, time)
+    disgust_smoother = OneEuroSmoother1D(disgust, time)
+    anger_smoother = OneEuroSmoother1D(anger, time)
+    
     while True:
         if SHOULD_CONNECT:
             socket = try_connect_socket()
         else:
             socket = None
         
-        for face_landmarks in iter_face_meshes():
+        for face_landmarks, image in iter_face_meshes():
             landmarks = face_landmarks.landmark
+            time = perf_counter()
+            
             mouth_openness_x, mouth_openness_y = get_mouth_openness(landmarks)
             
-            time = perf_counter()
             
             head_x = get_head_x_rotation(landmarks)
             head_y = get_head_y_rotation(landmarks)
@@ -197,6 +216,7 @@ def run():
             if (socket is not None):
                 try:
                     socket.send((
+                        f'{PACKET_TYPE_MOVEMENT} '
                         f'{iris_left_x:.4f} {iris_left_y:.4f} {iris_right_x:.4f} {iris_right_y:.4f} '
                         f'{eye_openness_left:.4f} {eye_openness_right:.4f} '
                         f'{head_x:.4f} {head_y:.4f} {head_z:.4f} '
@@ -206,5 +226,25 @@ def run():
                     ).encode())
                 except BrokenPipeError:
                     break
+            
+            happiness, sadness, surprise, fear, disgust, anger = detect_expressions(landmarks, image)
+            
+            happiness = happiness_smoother(happiness, time)
+            sadness = sadness_smoother(sadness, time)
+            surprise = surprise_smoother(surprise, time)
+            fear = fear_smoother(fear, time)
+            disgust = disgust_smoother(disgust, time)
+            anger = anger_smoother(anger, time)
+            
+            
+            if (socket is not None):
+                try:
+                    socket.send((
+                        f'{PACKET_TYPE_EXPRESSION} '
+                        f'{happiness:.4f} {sadness:.4f} {surprise:.4f} {fear:.4f} {disgust:.4f} {anger:.4f}'
+                    ).encode())
+                except BrokenPipeError:
+                    break
+        
         else:
             break
