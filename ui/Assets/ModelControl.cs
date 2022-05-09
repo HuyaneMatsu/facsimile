@@ -238,12 +238,18 @@ public class ModelControl : MonoBehaviour {
     [Header("Position")]
     [SerializeField]
     [Range(-10.0f, 10.0f)]
-    public float default_position_deepness = 0.7f;
+    public float default_position_deepness = 0.0f;
+    [Range(-10.0f, 10.0f)]
+    public float default_position_horizontal = 0.0f;
+    [Range(-10.0f, 10.0f)]
+    public float default_position_vertical = 0.0f;
     [SerializeField]
     public bool lock_position_deepness = true;
-
     [SerializeField]
-    public bool enable_position_change = true;
+    public bool lock_position_horizontal = true;
+    [SerializeField]
+    public bool lock_position_vertical = true;
+
 
     [Header("Smoothing")]
     [SerializeField]
@@ -251,6 +257,30 @@ public class ModelControl : MonoBehaviour {
     public int smooth_level = 4;
     private int movement_smooth_step = 0;
     private int expression_smooth_step = 0;
+
+
+    [Header("Hair")]
+    [SerializeField]
+    [Range(0.0f, 4.0f)]
+    public float hair_stiffness = 0.5f;
+    [SerializeField]
+    [Range(0.0f, 1.0f)]
+    public float hair_gravity = 0.05f;
+    [SerializeField]
+    [Range(0.0f, 1.0f)]
+    public float hair_drag = 1.0f;
+
+
+    [Header("Chest")]
+    [SerializeField]
+    [Range(0.0f, 4.0f)]
+    public float chest_stiffness = 0.2f;
+    [SerializeField]
+    [Range(0.0f, 1.0f)]
+    public float chest_gravity = 0.05f;
+    [SerializeField]
+    [Range(0.0f, 1.0f)]
+    public float chest_drag = 0.2f;
 
 
     [Header("Movements")]
@@ -867,9 +897,9 @@ public class ModelControl : MonoBehaviour {
     void try_adjust_chest_gravity() {
         VRMSpringBone chest_bone = this.get_secondary_body_bone(SECONDARY_BODY_PART_NAME.CHEST);
         if (chest_bone != null) {
-            chest_bone.m_stiffnessForce = 0.2f;
-            chest_bone.m_gravityPower = 0.05f;
-            chest_bone.m_dragForce = 1.0f;
+            chest_bone.m_stiffnessForce = this.chest_stiffness;
+            chest_bone.m_gravityPower = this.chest_gravity;
+            chest_bone.m_dragForce = this.chest_drag;
         }
     }
 
@@ -885,9 +915,9 @@ public class ModelControl : MonoBehaviour {
 
     void try_adjust_hair_gravity() {
         foreach (VRMSpringBone hair in this.iter_secondary_body_bones(SECONDARY_BODY_PART_NAME.HAIR)) {
-            hair.m_stiffnessForce = 1.0f;
-            hair.m_gravityPower = 0.08f;
-            hair.m_dragForce = 1.0f;
+            hair.m_stiffnessForce = this.hair_stiffness;
+            hair.m_gravityPower = this.hair_gravity;
+            hair.m_dragForce = this.hair_drag;
         }
     }
 
@@ -908,6 +938,13 @@ public class ModelControl : MonoBehaviour {
                 UTILS.point_difference(arm_upper_right.transform.position, shoulder_left.transform.position)
             ) * 0.5f;
         }
+    }
+
+    void invoke_adjustments() {
+        this.try_adjust_colliders();
+        this.try_adjust_chest_gravity();
+        this.try_adjust_ear_cat_gravity();
+        this.try_adjust_hair_gravity();
     }
 
     void set_head_size() {
@@ -944,10 +981,7 @@ public class ModelControl : MonoBehaviour {
         this.set_head_size();
         this.set_hips_position();
 
-        this.try_adjust_colliders();
-        this.try_adjust_chest_gravity();
-        this.try_adjust_ear_cat_gravity();
-        this.try_adjust_hair_gravity();
+        this.invoke_adjustments();
 
         this.maybe_start_tpc_connection();
 
@@ -1095,24 +1129,25 @@ public class ModelControl : MonoBehaviour {
 
             float head_size = this.head_size;
 
-
-            float position_z;
-            if (this.lock_position_deepness) {
-                position_z = hips_position.z;
-            } else {
-                position_z = (
-                    hips_position.z +
-                    this.face_position_z * head_size +
-                    neck_difference.z +
-                    default_position_deepness
-                );
+            float position_x = this.default_position_horizontal;
+            if (! this.lock_position_horizontal) {
+                position_x += this.face_position_y * head_size + neck_difference.x;
             }
 
+            float position_y = this.default_position_vertical;
+            if (! this.lock_position_vertical) {
+                position_y = this.face_position_x * head_size + neck_difference.y;
+            }
+
+            float position_z = + this.default_position_deepness;
+            if (! this.lock_position_deepness) {
+               position_z += this.face_position_z * head_size + neck_difference.z;
+            }
 
             hips.transform.position = new Vector3(
-                hips_position.x + this.face_position_y * head_size + neck_difference.x,
-                hips_position.y + this.face_position_x * head_size + neck_difference.y,
-                position_z
+                hips_position.x + position_x,
+                hips_position.y + position_y,
+                hips_position.z + position_z
             );
         }
     }
@@ -1668,11 +1703,16 @@ public class ModelControl : MonoBehaviour {
         this.update_face();
 
         // Body
-        if (this.enable_position_change) {
-            this.update_position();
-        }
+        this.update_position();
+
+        this.handle_key_presses();
     }
 
+    void handle_key_presses() {
+        if (Input.GetKeyDown(KeyCode.F5)) {
+            this.invoke_adjustments();
+        }
+    }
     // Teardown
     
     void OnApplicationQuit() {
