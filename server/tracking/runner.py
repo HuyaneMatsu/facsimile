@@ -9,7 +9,7 @@ from .eyebrow_liftedness import get_eyebrow_liftedness
 from .face_position import get_face_position
 from .face_mesh_getter import iter_face_meshes
 from .head import get_head_x_rotation, get_head_y_rotation, get_head_z_rotation
-from .iris import accelerate_iris_left_x, accelerate_iris_right_x, get_left_iris_rotations, get_right_iris_rotations
+from .iris import accelerate_iris_right_x, accelerate_iris_left_x, get_left_iris_rotations, get_right_iris_rotations
 from .mouth_openness import get_mouth_openness
 from .smile import get_smile_ratio
 from .smoothing import OneEuroSmoother1D
@@ -18,10 +18,10 @@ from .constants import PACKET_TYPE_MOVEMENT, PACKET_TYPE_EXPRESSION
 
 
 def run():
-    iris_left_x = 0.0
-    iris_left_y = 0.0
     iris_right_x = 0.0
     iris_right_y = 0.0
+    iris_left_x = 0.0
+    iris_left_y = 0.0
     
     eye_openness_left = 0.0
     eye_openness_right = 0.0
@@ -51,10 +51,10 @@ def run():
     time = perf_counter()
     
     
-    iris_left_x_smoother = OneEuroSmoother1D(iris_left_x, time)
-    iris_left_y_smoother = OneEuroSmoother1D(iris_left_y, time)
     iris_right_x_smoother = OneEuroSmoother1D(iris_right_x, time)
     iris_right_y_smoother = OneEuroSmoother1D(iris_right_y, time)
+    iris_left_x_smoother = OneEuroSmoother1D(iris_left_x, time)
+    iris_left_y_smoother = OneEuroSmoother1D(iris_left_y, time)
     
     eye_openness_left_smoother = OneEuroSmoother1D(eye_openness_left, time, acceleration=2.5)
     eye_openness_right_smoother = OneEuroSmoother1D(eye_openness_right, time, acceleration=2.5)
@@ -106,18 +106,18 @@ def run():
                 eye_openness_right = eye_openness_left
                 
                 if eye_openness_left < 40.0:
-                    iris_left_x = 0.0
-                    iris_left_y = 0.0
                     iris_right_x = 0.0
                     iris_right_y = 0.0
+                    iris_left_x = 0.0
+                    iris_left_y = 0.0
                     
                 else:
-                    iris_ratio_left = get_right_iris_rotations(landmarks)
-                    if (iris_ratio_left is not None):
-                        iris_left_x, iris_left_y = iris_ratio_left
+                    iris_ratio_right = get_right_iris_rotations(landmarks)
+                    if (iris_ratio_right is not None):
+                        iris_right_x, iris_right_y = iris_ratio_right
                     
-                    iris_right_x = iris_left_x
-                    iris_right_y = iris_left_y
+                    iris_left_x = iris_right_x
+                    iris_left_y = iris_right_y
             
             elif head_x < -20.0:
 
@@ -125,18 +125,18 @@ def run():
                 eye_openness_left = eye_openness_right
                 
                 if eye_openness_right < 40.0:
-                    iris_left_x = 0.0
-                    iris_left_y = 0.0
                     iris_right_x = 0.0
                     iris_right_y = 0.0
+                    iris_left_x = 0.0
+                    iris_left_y = 0.0
                 
                 else:
-                    iris_ratio_right = get_left_iris_rotations(landmarks)
-                    if (iris_ratio_right is not None):
-                        iris_right_x, iris_right_y = iris_ratio_right
+                    iris_ratio_left = get_left_iris_rotations(landmarks)
+                    if (iris_ratio_left is not None):
+                        iris_left_x, iris_left_y = iris_ratio_left
                     
-                    iris_left_x = iris_right_x
-                    iris_left_y = iris_right_y
+                    iris_right_x = iris_left_x
+                    iris_right_y = iris_left_y
                 
             
             else:
@@ -144,33 +144,33 @@ def run():
                 eye_openness_right = get_right_eye_openness(landmarks)
                 
                 if eye_openness_left < 40.0:
-                    iris_left_x = 0.0
-                    iris_left_y = 0.0
-                else:
-                    iris_ratio_left = get_right_iris_rotations(landmarks)
-                    if (iris_ratio_left is not None):
-                        iris_left_x, iris_left_y = iris_ratio_left
-                
-                if eye_openness_right < 40.0:
                     iris_right_x = 0.0
                     iris_right_y = 0.0
                 else:
-                    iris_ratio_right = get_left_iris_rotations(landmarks)
+                    iris_ratio_right = get_right_iris_rotations(landmarks)
                     if (iris_ratio_right is not None):
                         iris_right_x, iris_right_y = iris_ratio_right
+                
+                if eye_openness_right < 40.0:
+                    iris_left_x = 0.0
+                    iris_left_y = 0.0
+                else:
+                    iris_ratio_left = get_left_iris_rotations(landmarks)
+                    if (iris_ratio_left is not None):
+                        iris_left_x, iris_left_y = iris_ratio_left
             
             
             if head_y < -45.0:
-                if iris_right_y > iris_left_y:
-                    iris_left_y = iris_right_y
-                else:
+                if iris_left_y > iris_right_y:
                     iris_right_y = iris_left_y
+                else:
+                    iris_left_y = iris_right_y
             
             elif head_y > 15.0:
-                if iris_left_y > iris_right_y:
-                    iris_left_y = iris_right_y
-                else:
+                if iris_right_y > iris_left_y:
                     iris_right_y = iris_left_y
+                else:
+                    iris_left_y = iris_right_y
             
             # Expressions
             smile_ratio = get_smile_ratio(landmarks)
@@ -178,8 +178,8 @@ def run():
             
             # Accelerate irises
             
-            iris_left_x = accelerate_iris_left_x(iris_left_x)
             iris_right_x = accelerate_iris_right_x(iris_right_x)
+            iris_left_x = accelerate_iris_left_x(iris_left_x)
             
             # Smooth movement
             
@@ -193,11 +193,11 @@ def run():
             head_y = head_y_smoother(head_y, time)
             head_z = head_z_smoother(head_z, time)
             
-            iris_left_x = iris_left_x_smoother(iris_left_x, time)
-            iris_left_y = iris_left_y_smoother(iris_left_y, time)
-            
             iris_right_x = iris_right_x_smoother(iris_right_x, time)
             iris_right_y = iris_right_y_smoother(iris_right_y, time)
+            
+            iris_left_x = iris_left_x_smoother(iris_left_x, time)
+            iris_left_y = iris_left_y_smoother(iris_left_y, time)
             
             eye_openness_left = eye_openness_left_smoother(eye_openness_left, time)
             eye_openness_right = eye_openness_right_smoother(eye_openness_right, time)

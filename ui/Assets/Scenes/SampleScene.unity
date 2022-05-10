@@ -123,7 +123,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &208014962
+--- !u!1001 &542933116
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -212,7 +212,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3897730391501247551, guid: d0cf5d69bb752b5779884e9de93b836c, type: 3}
       propertyPath: m_AABB.m_Center.z
-      value: -0.007178694
+      value: -0.0071787536
       objectReference: {fileID: 0}
     - target: {fileID: 3897730391501247551, guid: d0cf5d69bb752b5779884e9de93b836c, type: 3}
       propertyPath: m_AABB.m_Extent.x
@@ -224,7 +224,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3897730391501247551, guid: d0cf5d69bb752b5779884e9de93b836c, type: 3}
       propertyPath: m_AABB.m_Extent.z
-      value: 0.1453751
+      value: 0.14537516
       objectReference: {fileID: 0}
     - target: {fileID: 4680659651045541570, guid: d0cf5d69bb752b5779884e9de93b836c, type: 3}
       propertyPath: m_DirtyAABB
@@ -232,7 +232,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4680659651045541570, guid: d0cf5d69bb752b5779884e9de93b836c, type: 3}
       propertyPath: m_AABB.m_Center.x
-      value: 0.00018185377
+      value: 0.00018186867
       objectReference: {fileID: 0}
     - target: {fileID: 4680659651045541570, guid: d0cf5d69bb752b5779884e9de93b836c, type: 3}
       propertyPath: m_AABB.m_Center.y
@@ -240,11 +240,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4680659651045541570, guid: d0cf5d69bb752b5779884e9de93b836c, type: 3}
       propertyPath: m_AABB.m_Center.z
-      value: -0.044813626
+      value: -0.044813864
       objectReference: {fileID: 0}
     - target: {fileID: 4680659651045541570, guid: d0cf5d69bb752b5779884e9de93b836c, type: 3}
       propertyPath: m_AABB.m_Extent.x
-      value: 0.22613293
+      value: 0.22613294
       objectReference: {fileID: 0}
     - target: {fileID: 4680659651045541570, guid: d0cf5d69bb752b5779884e9de93b836c, type: 3}
       propertyPath: m_AABB.m_Extent.y
@@ -252,7 +252,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4680659651045541570, guid: d0cf5d69bb752b5779884e9de93b836c, type: 3}
       propertyPath: m_AABB.m_Extent.z
-      value: 0.13839656
+      value: 0.13839632
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d0cf5d69bb752b5779884e9de93b836c, type: 3}
@@ -434,18 +434,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
---- !u!1 &1909120995 stripped
+--- !u!1 &1032384875 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2662003576537004149, guid: d0cf5d69bb752b5779884e9de93b836c, type: 3}
-  m_PrefabInstance: {fileID: 208014962}
+  m_PrefabInstance: {fileID: 542933116}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1909120996
+--- !u!114 &1032384876
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1909120995}
+  m_GameObject: {fileID: 1032384875}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 42d5cbbc57bf6b8c986d7aae2efab32a, type: 3}
