@@ -6,7 +6,7 @@ MODEL_PATH = 'server/tracking/models/efficient_face_model.tflite'
 
 
 SADNESS_REDUCTION = 0.75
-SURPRISE_REDUCTION = 0.30
+SURPRISE_REDUCTION = 0.50
 
 
 

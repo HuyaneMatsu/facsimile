@@ -253,11 +253,17 @@ public class ModelControl : MonoBehaviour {
 
     [Header("Smoothing")]
     [SerializeField]
-    [Range(1, 6)]
-    public int smooth_level = 4;
+    [Range(1, 60)]
+    public int application_fps = 30;
+    [Range(1, 60)]
+    public int server_fps = 15;
+
+    private int smooth_level = 1;
     private int movement_smooth_step = 0;
     private int expression_smooth_step = 0;
 
+    private const float blinkage_speed = 12.0f;
+    private int blinkage_steps = 8;
 
     [Header("Hair")]
     [SerializeField]
@@ -426,10 +432,6 @@ public class ModelControl : MonoBehaviour {
     private int left_eye_close_step = 0;
     private int right_eye_close_step = 0;
 
-
-    // system
-    /* Unused for now */
-    private float target_fps = 60.0f;
 
     /* This will be changed at startup, no worries */
     private float head_size = 1.0f;
@@ -973,6 +975,35 @@ public class ModelControl : MonoBehaviour {
         }
     }
 
+    void set_fps() {
+        int application_fps = this.application_fps;
+        Application.targetFrameRate = application_fps;
+
+        int smooth_level = Convert.ToInt32(
+            Math.Ceiling(
+                Convert.ToDouble((application_fps)) /
+                Convert.ToDouble((this.server_fps))
+            )
+        );
+
+        if (smooth_level <= 0) {
+            smooth_level = 1;
+        }
+        this.smooth_level = smooth_level;
+
+        int blinkage_steps = Convert.ToInt32(
+            Math.Ceiling(
+                (double)(1.0f / ModelControl.blinkage_speed) *
+                Convert.ToDouble(application_fps)
+            )
+        );
+
+        if (blinkage_steps <= 0) {
+            blinkage_steps = 1;
+        }
+        this.blinkage_steps = blinkage_steps;
+    }
+
     // Start is called before the first frame update
 
     void Start() {
@@ -985,7 +1016,7 @@ public class ModelControl : MonoBehaviour {
 
         this.maybe_start_tpc_connection();
 
-        this.target_fps = Application.targetFrameRate;
+        this.set_fps();
 
         this.set_shoulder_length();
 
@@ -1204,7 +1235,7 @@ public class ModelControl : MonoBehaviour {
         // Move the eyes
 
         if (should_close_left) {
-            if (left_eye_close_step < 7) {
+            if (left_eye_close_step < this.blinkage_steps) {
                 left_eye_close_step += 1;
             } else {
                 this.did_left_eye_close = true;
@@ -1219,7 +1250,7 @@ public class ModelControl : MonoBehaviour {
         }
 
         if (should_close_right) {
-            if (right_eye_close_step < 7) {
+            if (right_eye_close_step < this.blinkage_steps) {
                 right_eye_close_step += 1;
             } else {
                 this.did_right_eye_close = true;
@@ -1233,8 +1264,8 @@ public class ModelControl : MonoBehaviour {
             }
         }
 
-        this.expression_eye_close_left = left_eye_close_step * 10.0f;
-        this.expression_eye_close_right = right_eye_close_step * 10.0f;
+        this.expression_eye_close_left = left_eye_close_step * (70.0f / (float)this.blinkage_steps);
+        this.expression_eye_close_right = right_eye_close_step * (70.0f / (float)this.blinkage_steps);
 
         // Store state
         this.left_eye_close_step = left_eye_close_step;
@@ -1720,8 +1751,8 @@ public class ModelControl : MonoBehaviour {
         if (tcp_client != null) {
             try {
                 tcp_client.Close();
-            } catch(Exception e) {
-                UnityEngine.Debug.Log(e.Message);
+            } catch (Exception exception) {
+                UnityEngine.Debug.Log(exception.Message);
             }
         }
         
@@ -1729,8 +1760,8 @@ public class ModelControl : MonoBehaviour {
         if (tcp_listener != null) {
             try {
                 tcp_listener.Stop();
-            } catch(Exception e) {
-                UnityEngine.Debug.Log(e.Message);
+            } catch (Exception exception) {
+                UnityEngine.Debug.Log(exception.Message);
             }
         }
     }
