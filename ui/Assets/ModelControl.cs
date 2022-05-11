@@ -268,10 +268,10 @@ public class ModelControl : MonoBehaviour {
     [Header("Hair")]
     [SerializeField]
     [Range(0.0f, 4.0f)]
-    public float hair_stiffness = 0.5f;
+    public float hair_stiffness = 0.36f;
     [SerializeField]
     [Range(0.0f, 1.0f)]
-    public float hair_gravity = 0.05f;
+    public float hair_gravity = 0.08f;
     [SerializeField]
     [Range(0.0f, 1.0f)]
     public float hair_drag = 1.0f;
@@ -868,7 +868,7 @@ public class ModelControl : MonoBehaviour {
                     );
 
                     VRMSpringBoneColliderGroup.SphereCollider[] new_colliders = (
-                        new VRMSpringBoneColliderGroup.SphereCollider[7]{
+                        new VRMSpringBoneColliderGroup.SphereCollider[7] {
                             colliders[0],
                             left_collider,
                             right_collider,
@@ -904,13 +904,22 @@ public class ModelControl : MonoBehaviour {
             if (neck_collider_group != null) {
                 VRMSpringBoneColliderGroup.SphereCollider[] colliders = neck_collider_group.Colliders;
                 if (colliders.Length == 1) {
+                    VRMSpringBoneColliderGroup.SphereCollider collider = colliders[0];
+                    float radius = collider.Radius * 1.1f;
+                    collider.Radius = radius;
+                    Vector3 position_difference = head.transform.position - neck.transform.position;
+
                     VRMSpringBoneColliderGroup.SphereCollider[] new_colliders = (
-                        new VRMSpringBoneColliderGroup.SphereCollider[2]{
-                            colliders[0],
+                        new VRMSpringBoneColliderGroup.SphereCollider[3] {
+                            collider,
                             new VRMSpringBoneColliderGroup.SphereCollider {
-                                Offset = (head.transform.position - neck.transform.position) * 0.5f,
-                                Radius = colliders[0].Radius
+                                Offset = position_difference * 0.33f,
+                                Radius = radius
                             },
+                            new VRMSpringBoneColliderGroup.SphereCollider {
+                                Offset = position_difference * 0.67f,
+                                Radius = radius
+                            }
                         }
                     );
                     neck_collider_group.Colliders = new_colliders;
@@ -1311,16 +1320,18 @@ public class ModelControl : MonoBehaviour {
         float expression_mouth_o = 0.0f;
 
         if (mouth_y > 6.0f) {
-            expression_mouth_a = (mouth_y - 6.0f) * 2.0f;
+            expression_mouth_a = (mouth_y - 6.0f) * 1.5f;
+            expression_mouth_o = expression_mouth_a / 3.0f;
 
             if (expression_mouth_a > 100.0f) {
-                expression_mouth_o = expression_mouth_a - 100.0f;
+                expression_mouth_o += expression_mouth_a - 100.0f;
                 expression_mouth_a = 100.0f;
-
-                if (expression_mouth_o > 100.0f) {
-                    expression_mouth_o = 100.0f;
-                }
             }
+
+            if (expression_mouth_o > 100.0f) {
+                expression_mouth_o = 100.0f;
+            }
+
         }
 
         if (mouth_x > 4.0f) {
@@ -1761,7 +1772,9 @@ public class ModelControl : MonoBehaviour {
 
         // Body
         this.update_position();
+    }
 
+    void FixedUpdate() {
         this.handle_key_presses();
     }
 

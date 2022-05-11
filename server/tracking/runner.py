@@ -158,6 +158,8 @@ def run():
                     iris_ratio_left = get_left_iris_rotations(landmarks)
                     if (iris_ratio_left is not None):
                         iris_left_x, iris_left_y = iris_ratio_left
+                
+                iris_left_y = iris_right_y = (iris_right_y + iris_left_y) * 0.5
             
             
             if head_y < -45.0:
