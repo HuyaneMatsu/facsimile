@@ -1445,7 +1445,7 @@ public class ModelControl : MonoBehaviour {
         // Update eyebrow even if we don not do `o` face
         this.expression_eyebrow_surprised = UTILS.merge_values(this.expression_eyebrow_surprised, surprise * 0.5f);
         if (surprise > 50.0f) {
-            this.expression_eye_surprised = UTILS.merge_values(this.expression_eye_surprised, surprise * 2.0f);
+            this.expression_eye_surprised = UTILS.merge_values(this.expression_eye_surprised, (surprise -50.0f) * 2.0f);
         }
 
         float expression_mouth_u = this.expression_mouth_u;
