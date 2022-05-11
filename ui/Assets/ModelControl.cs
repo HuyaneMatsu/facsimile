@@ -894,6 +894,30 @@ public class ModelControl : MonoBehaviour {
                 }
             }
         }
+
+        // Neck
+        GameObject neck = this.neck;
+        GameObject head = this.head;
+
+        if ((neck != null) && (head != null)) {
+            VRMSpringBoneColliderGroup neck_collider_group = neck.GetComponent<VRMSpringBoneColliderGroup>();
+            if (neck_collider_group != null) {
+                VRMSpringBoneColliderGroup.SphereCollider[] colliders = neck_collider_group.Colliders;
+                if (colliders.Length == 1) {
+                    VRMSpringBoneColliderGroup.SphereCollider[] new_colliders = (
+                        new VRMSpringBoneColliderGroup.SphereCollider[2]{
+                            colliders[0],
+                            new VRMSpringBoneColliderGroup.SphereCollider {
+                                Offset = (head.transform.position - neck.transform.position) * 0.5f,
+                                Radius = colliders[0].Radius
+                            },
+                        }
+                    );
+                    neck_collider_group.Colliders = new_colliders;
+                }
+            }
+        }
+
     }
 
     void try_adjust_chest_gravity() {
