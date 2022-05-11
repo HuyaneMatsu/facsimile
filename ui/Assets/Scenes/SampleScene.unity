@@ -291,8 +291,8 @@ MonoBehaviour:
   lock_position_vertical: 1
   application_fps: 30
   server_fps: 15
-  hair_stiffness: 0.2
-  hair_gravity: 0.05
+  hair_stiffness: 0.4
+  hair_gravity: 0.2
   hair_drag: 1
   chest_stiffness: 0.2
   chest_gravity: 0.05
