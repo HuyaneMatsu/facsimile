@@ -3,6 +3,7 @@ from datetime import datetime
 from threading import Thread, Event as SyncEvent
 
 from .constants import DATETIME_FORMAT_CODE, NOTIFY_INTERVAL, RETRY_AFTER
+from .variables import CONNECT_URL
 
 from cv2 import (
     CAP_PROP_FPS as CAPTURE_PROPERTY__FPS, VideoCapture, CAP_PROP_FRAME_WIDTH as CAPTURE_PROPERTY__FRAME_WIDTH,
@@ -25,7 +26,11 @@ class CaptureThread(Thread):
     
     
     def run(self):
-        camera = VideoCapture(0)
+        if CONNECT_URL is None:
+            camera = VideoCapture(0)
+        else:
+            camera = VideoCapture(CONNECT_URL)
+        
         try:
             camera.set(CAPTURE_PROPERTY__FPS, 30)
             camera.set(CAPTURE_PROPERTY__FRAME_WIDTH, 720)

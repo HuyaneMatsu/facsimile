@@ -1,8 +1,13 @@
 __all__ = ()
 
+from os.path import dirname as get_directory_name, join as join_paths
+
+from ... import __file__ as PACKAGE_ROOT_FILE
+
+
 MARGIN = 1.2
 
-MODEL_PATH = 'server/tracking/models/efficient_face_model.tflite'
+MODEL_PATH = join_paths(get_directory_name(PACKAGE_ROOT_FILE), 'tracking', 'models', 'efficient_face_model.tflite')
 
 
 SADNESS_REDUCTION = 0.75
