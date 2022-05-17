@@ -25,6 +25,8 @@ ui/Assets/UniGLTF/*
 ui/Assets/Models/*
 *.unity
 *.unity.meta
+*.meta
+*.cs.meta
 
 # Unity
 
