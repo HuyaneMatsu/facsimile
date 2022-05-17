@@ -23,6 +23,8 @@ ui/Assets/VRM/*
 ui/Assets/UniGLTF.*
 ui/Assets/UniGLTF/*
 ui/Assets/Models/*
+*.unity
+*.unity.meta
 
 # Unity
 
