@@ -2,13 +2,15 @@
 
 > This file contains detailed steps of what I did. Might change as I go along and write better software.
 
-#### Create model
+### Create model
 
 1. First create an model with **VRoid studio**. Install it from Stream it is free & works on Linux.
    
 2. After you created it, **export it as VRM**.
 
-#### Import the model
+> If your model is not great, do not worry, it might take around 10 iterations to make it good!
+
+### Import the model
 
 1. Install [**Unity Hub**](https://unity3d.com/get-unity/download).
 
@@ -28,7 +30,7 @@
 
 5. Import the model with `VRM0` -> `Import from VRM 0.x`.
 
-#### Animate the model
+### Animate the model
 
 1. Go to the directory of your model. Drag your model into the field.
    
@@ -49,13 +51,14 @@
 
 5. Assign the model to the **Avatar** field.
 
-#### Post words
+### Post words
 
 At this point you are basically done, if you have the tracker setup, just click on the play button in the unity editor.
 
-By learning more about unity, you can customize many things, like inserting something behind you & such. 
+By learning more about unity, you can customize many things, like inserting something behind you, creating an
+application from the project & many more!
 
-#### Configuration
+### Configuration
 
 At unity editor the Model control provides you with various settings.
 

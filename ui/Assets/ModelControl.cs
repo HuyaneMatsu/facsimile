@@ -1235,7 +1235,7 @@ public class ModelControl : MonoBehaviour {
         bool did_left_eye_close = this.did_left_eye_close;
         bool did_right_eye_close = this.did_right_eye_close;
         float close_eye_at = this.close_eye_at;
-        float open_eye_at = this.close_eye_at;
+        float open_eye_at = this.open_eye_at;
 
         bool should_close_left;
         bool should_close_right;
