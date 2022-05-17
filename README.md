@@ -2,6 +2,8 @@
     Some derpy vtuber software that I made in my free time.
 </p>
 
+<h1></h1>
+
 The aim of the project to provide a free-to-play way for anyone to become a vtuber if they want to.
 
 <h1></h1>
