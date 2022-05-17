@@ -58,7 +58,7 @@ At this point you are basically done, if you have the tracker setup, just click 
 By learning more about unity, you can customize many things, like inserting something behind you, creating an
 application from the project & many more!
 
-### Configuration
+## Configuration
 
 At unity editor the Model control provides you with various settings.
 
