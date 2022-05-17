@@ -59,5 +59,14 @@ By learning more about unity, you can customize many things, like inserting some
 
 At unity editor the Model control provides you with various settings.
 
-- `camera_angle_vertical`. Defaults to `-15` (degrees). It refers to your camera's position. negative numbers are under
-    your screen, meanwhile positive ones are on top of it.
+##### Camera
+
+`camera_angle_vertical` (Defaults to `-15` degrees) refers to your camera's position. negative numbers are under
+your screen, meanwhile positive ones are on top of it.
+
+It is the best to keep it as close to `0` as you can. Handles negative numbers better than positive.
+
+##### Eyes
+
+When blinking too much, because of "asian" eyes, try to reduce `open_eye_at` value (Defaults to `50`).
+Occasionally you also might want to reduce `close_eye_at` (Defaults to `20`).

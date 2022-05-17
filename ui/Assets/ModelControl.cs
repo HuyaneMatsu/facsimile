@@ -235,6 +235,14 @@ public class ModelControl : MonoBehaviour {
     [Range(10.0f, 40.0f)]
     public float default_mouth_openness_vertical = +26.0f;
 
+    [Header("Eyes")]
+    [SerializeField]
+    [Range(30.0f, 70.0f)]
+    public float open_eye_at = 50.0f;
+    [SerializeField]
+    [Range(10.0f, 30.0f)]
+    public float close_eye_at = 20.0f;
+
     [Header("Position")]
     [SerializeField]
     [Range(-10.0f, 10.0f)]
@@ -1226,6 +1234,8 @@ public class ModelControl : MonoBehaviour {
         int right_eye_close_step = this.right_eye_close_step;
         bool did_left_eye_close = this.did_left_eye_close;
         bool did_right_eye_close = this.did_right_eye_close;
+        float close_eye_at = this.close_eye_at;
+        float open_eye_at = this.close_eye_at;
 
         bool should_close_left;
         bool should_close_right;
@@ -1233,11 +1243,11 @@ public class ModelControl : MonoBehaviour {
         // Detect whether we should close the eyes
         if (
             ((!did_left_eye_close) && (left_eye_close_step != 0)) ||
-            (eye_openness_left <= 20.0f) ||
+            (eye_openness_left <= close_eye_at) ||
             (
-                (eye_openness_left <= 50.0f) &&
+                (eye_openness_left <= open_eye_at) &&
                 (
-                    (eye_openness_right <= 20.0f) ||
+                    (eye_openness_right <= close_eye_at) ||
                     (is_left_eye_closing) ||
                     (is_right_eye_closing)
                 )
@@ -1250,11 +1260,11 @@ public class ModelControl : MonoBehaviour {
 
         if (
             ((!did_right_eye_close) && (right_eye_close_step != 0)) ||
-            (eye_openness_right <= 20.0f) ||
+            (eye_openness_right <= close_eye_at) ||
             (
-                (eye_openness_right <= 50.0f) &&
+                (eye_openness_right <= open_eye_at) &&
                 (
-                    (eye_openness_left <= 20.0f) ||
+                    (eye_openness_left <= close_eye_at) ||
                     (is_left_eye_closing) ||
                     (is_right_eye_closing)
                 )
