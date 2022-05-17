@@ -2,7 +2,8 @@
 
 ## Linux
 
-To start up the server you will need python3 & clone the project from github. You can just download it as zip & unpack.
+To start up the server you will need python3.8 probably & clone the project from github.
+You can just download it as zip & unpack, which is a pretty simple way of doing it.
 
 When acquired, move with terminal to the `server` directory and run
 

@@ -30,14 +30,34 @@
 
 #### Animate the model
 
-1. Go to the directory of your model. Pull your model into the field.
-    
-    > Resetting it's coordinates is recommended.
+1. Go to the directory of your model. Drag your model into the field.
+   
+    > If you do not find what exactly to drag. It is (probably) the last item in the directory you imported to the
+    > model. You will find it easily, because it has a preview, meanwhile all the other files are just folders.
+    >
+    > Please reset coordinates of the model to all `0`.
+    >
+    > For now set the camera position to `0, 1.4, 0.8` as well and it's `y` axis rotation to `180`.
 
 2. Copy paste the [**ModelControl.cs**](./Assets/ModelControl.cs) file to your project.
+   
+> If you do not know where, put it into the `Assets` directory as well.
 
 3. Select your model, **Add Component**.
 
 4. Select the **ModelControl.cs** file.
 
 5. Assign the model to the **Avatar** field.
+
+#### Post words
+
+At this point you are basically done, if you have the tracker setup, just click on the play button in the unity editor.
+
+By learning more about unity, you can customize many things, like inserting something behind you & such. 
+
+#### Configuration
+
+At unity editor the Model control provides you with various settings.
+
+- `camera_angle_vertical`. Defaults to `-15` (degrees). It refers to your camera's position. negative numbers are under
+    your screen, meanwhile positive ones are on top of it.

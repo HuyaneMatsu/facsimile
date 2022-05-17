@@ -3,13 +3,13 @@ from datetime import datetime
 from threading import Thread, Event as SyncEvent
 
 from .constants import DATETIME_FORMAT_CODE, NOTIFY_INTERVAL, RETRY_AFTER
+from .helpers import suppress_stdout_and_stderr
 from .variables import CONNECT_URL
 
 from cv2 import (
     CAP_PROP_FPS as CAPTURE_PROPERTY__FPS, VideoCapture, CAP_PROP_FRAME_WIDTH as CAPTURE_PROPERTY__FRAME_WIDTH,
     CAP_PROP_FRAME_HEIGHT as CAPTURE_PROPERTY__FRAME_HEIGHT
 )
-
 
 
 class CaptureThread(Thread):
@@ -26,30 +26,50 @@ class CaptureThread(Thread):
     
     
     def run(self):
-        if CONNECT_URL is None:
-            camera = VideoCapture(0)
-        else:
-            camera = VideoCapture(CONNECT_URL)
+        camera = None
         
-        try:
-            camera.set(CAPTURE_PROPERTY__FPS, 30)
-            camera.set(CAPTURE_PROPERTY__FRAME_WIDTH, 720)
-            camera.set(CAPTURE_PROPERTY__FRAME_HEIGHT, 480)
-            
-            
-            while True:
+        while True:
+            try:
                 if self._stopping:
                     return
                 
-                success, frame = camera.read()
-                if success:
-                    self._feed_frame(frame)
-                else:
-                    self._maybe_notify()
+                with suppress_stdout_and_stderr(False):
+                    if CONNECT_URL is None:
+                        camera = VideoCapture(0)
+                    else:
+                        camera = VideoCapture(CONNECT_URL)
+                    
+                if not camera.isOpened():
+                    self._maybe_notify(
+                        'Failed to connect to ' +
+                        ('video source 0' if CONNECT_URL is None else CONNECT_URL)
+                    )
                     self._sleep()
-        
-        finally:
-            camera.release()
+                
+                
+                camera.set(CAPTURE_PROPERTY__FPS, 30)
+                camera.set(CAPTURE_PROPERTY__FRAME_WIDTH, 720)
+                camera.set(CAPTURE_PROPERTY__FRAME_HEIGHT, 480)
+                
+                
+                while True:
+                    if self._stopping:
+                        return
+                    
+                    if not camera.isOpened():
+                        break
+                    
+                    success, frame = camera.read()
+                    if success:
+                        self._feed_frame(frame)
+                    else:
+                        self._maybe_notify('Failed to read frame')
+                        self._sleep()
+            
+            finally:
+                if (camera is not None):
+                    camera.release()
+                    camera = None
     
     
     def _feed_frame(self, frame):
@@ -89,12 +109,12 @@ class CaptureThread(Thread):
             retry_after_event.set()
     
     
-    def _maybe_notify(self):
+    def _maybe_notify(self, message):
         now = datetime.utcnow()
         last_notify = self._last_notify
         if (last_notify is None) or (last_notify + NOTIFY_INTERVAL < now):
             self._last_notify = now
-            sys.stderr.write(f'{now:{DATETIME_FORMAT_CODE}}Failed to read frame\n')
+            sys.stderr.write(f'{now:{DATETIME_FORMAT_CODE}}: {message}\n')
     
     
     def _sleep(self):
