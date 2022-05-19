@@ -4,12 +4,11 @@ from math import floor, ceil
 
 from ..face_mesh_points import FACE_MESH_POINT__CHIN, FACE_MESH_POINT__FOREHEAD
 
-from ..helpers import get_point_average_2d, get_point_difference_2d
+from ..helpers import get_point_average_2d, get_point_difference_2d, suppress_stdout_and_stderr
 
 from .constants import MARGIN, MODEL_PATH
 from .helpers import normalize_expressions
 
-import tensorflow
 from cv2 import resize
 from numpy import float32 as f32, array as Array, moveaxis as move_axis
 
@@ -17,13 +16,15 @@ from numpy import float32 as f32, array as Array, moveaxis as move_axis
 NORMALIZER_MEAN = Array([0.57535914, 0.44928582, 0.40079932], dtype=f32) * f32(255)
 NORMALIZER_STANDARD = Array([0.20735591, 0.18981615, 0.18132027], dtype=f32) * f32(255)
 
-INTERPRETER = tensorflow.lite.Interpreter(model_path=MODEL_PATH)
-INTERPRETER.allocate_tensors()
+
+with suppress_stdout_and_stderr(True):
+    import tensorflow
+    INTERPRETER = tensorflow.lite.Interpreter(model_path=MODEL_PATH)
+    INTERPRETER.allocate_tensors()
+
 
 INPUT_TENSOR = INTERPRETER.get_input_details()[0]['index']
 OUTPUT_TENSOR = INTERPRETER.get_output_details()[0]['index']
-
-labels = ["Neutral", "Happiness", "Sadness", "Surprise", "Fear", "Disgust", "Anger"]
 
 
 def detect_expressions(landmarks, image):

@@ -3,10 +3,13 @@ __all__ = ('Vector3',)
 import sys
 from collections import namedtuple as NamedTuple
 from contextlib import contextmanager as to_context_manager
+from datetime import datetime
 from math import sqrt
 from os import (
     close as close_file_descriptor, devnull, dup as duplicate_file_descriptor, dup2 as duplicate_file_descriptor_to
 )
+
+from .constants import DATETIME_FORMAT_CODE
 
 
 def get_point_difference_3d(point_1, point_2):
@@ -78,3 +81,14 @@ def suppress_stdout_and_stderr(suppress_python):
 
     new_stdout.close()
     new_stderr.close()
+
+
+def log(message, when=None):
+    if when is None:
+        when = datetime.utcnow()
+    
+    sys.stdout.write(f'{when:{DATETIME_FORMAT_CODE}}: {message}\n')
+
+
+def format_address(address):
+    return f'{address[0]}:{address[1]}'

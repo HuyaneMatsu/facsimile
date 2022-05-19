@@ -8,6 +8,7 @@ from .mouth_openness import *
 from .smile import *
 from .smoothing import *
 
+from .capture import *
 from .connection import *
 from .constants import *
 from .face_mesh_points import *
@@ -18,6 +19,7 @@ from .variables import *
 
 
 __all__ = (
+    *capture.__all__,
     *expression.__all__,
     *eye_openness.__all__,
     *eyebrow_liftedness.__all__,

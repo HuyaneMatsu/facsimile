@@ -1,9 +1,10 @@
-import sys
+__all__ = ()
+
 from datetime import datetime
 from threading import Thread, Event as SyncEvent
 
-from .constants import DATETIME_FORMAT_CODE, NOTIFY_INTERVAL, RETRY_AFTER
-from .helpers import suppress_stdout_and_stderr
+from .constants import NOTIFY_INTERVAL, RETRY_AFTER
+from .helpers import log, suppress_stdout_and_stderr
 from .variables import CONNECT_URL
 
 from cv2 import (
@@ -22,6 +23,9 @@ class CaptureThread(Thread):
         self._last_notify = None
         self._retry_after_event = None
         Thread.__init__(self, daemon=True)
+        
+        log(f'CAPTURE | Starting thread')
+        
         self.start()
     
     
@@ -30,22 +34,39 @@ class CaptureThread(Thread):
         
         while True:
             try:
-                if self._stopping:
-                    return
-                
-                with suppress_stdout_and_stderr(False):
-                    if CONNECT_URL is None:
-                        camera = VideoCapture(0)
-                    else:
-                        camera = VideoCapture(CONNECT_URL)
+                log(
+                    f'CAPTURE | Trying to connect to: ' +
+                    ('video source 0' if CONNECT_URL is None else CONNECT_URL)
+                )
+        
+                while True:
+                    if self._stopping:
+                        return
                     
-                if not camera.isOpened():
+                    with suppress_stdout_and_stderr(False):
+                        if CONNECT_URL is None:
+                            camera = VideoCapture(0)
+                        else:
+                            camera = VideoCapture(CONNECT_URL)
+                        
+                    if camera.isOpened():
+                        break
+                    
+                    
+                    camera.release()
+                    camera = None
+                    
                     self._maybe_notify(
-                        'Failed to connect to ' +
+                        'CAPTURE | Failed to connect to: ' +
                         ('video source 0' if CONNECT_URL is None else CONNECT_URL)
                     )
                     self._sleep()
+                    continue
                 
+                log(
+                    f'CAPTURE | Connected to: ' +
+                    ('video source 0' if CONNECT_URL is None else CONNECT_URL)
+                )
                 
                 camera.set(CAPTURE_PROPERTY__FPS, 30)
                 camera.set(CAPTURE_PROPERTY__FRAME_WIDTH, 720)
@@ -63,7 +84,7 @@ class CaptureThread(Thread):
                     if success:
                         self._feed_frame(frame)
                     else:
-                        self._maybe_notify('Failed to read frame')
+                        self._maybe_notify('CAPTURE | Reading frame failed')
                         self._sleep()
             
             finally:
@@ -107,6 +128,8 @@ class CaptureThread(Thread):
         retry_after_event = self._retry_after_event
         if (retry_after_event is not None):
             retry_after_event.set()
+        
+        log(f'CAPTURE | Stopping thread')
     
     
     def _maybe_notify(self, message):
@@ -114,7 +137,8 @@ class CaptureThread(Thread):
         last_notify = self._last_notify
         if (last_notify is None) or (last_notify + NOTIFY_INTERVAL < now):
             self._last_notify = now
-            sys.stderr.write(f'{now:{DATETIME_FORMAT_CODE}}: {message}\n')
+            
+            log(message, now)
     
     
     def _sleep(self):
