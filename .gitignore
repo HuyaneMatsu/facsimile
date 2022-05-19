@@ -27,8 +27,8 @@ ui/Assets/Models/*
 *.unity.meta
 *.meta
 *.cs.meta
-/manifest.json
-/packages-lock.json
+manifest.json
+packages-lock.json
 
 # Unity
 
