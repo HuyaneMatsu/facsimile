@@ -26,7 +26,7 @@
     If the editor has a `VRM0` tab you are all good! If not:
         
         1. Go to the release the page and download the `.unitypackage` file.
-        2. Drag the file into the editor. Will ask a fewt hings, just accept everything!
+        2. Drag the file into the editor. Will ask a few things, just accept everything!
 
 5. Import the model with `VRM0` -> `Import from VRM 0.x`.
 

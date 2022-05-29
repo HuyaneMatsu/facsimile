@@ -32,6 +32,8 @@ Start up the server with `--to` parameter. Put the displayed address by DroidCam
 python3 server --to http://0.0.0.0:4747/video
 ```
 
+It wont work right away, because it tries to connect to unity first. Try the [debug][#debug] options to test it.
+
 ## Debugging
 
 - `--draw` parameter will show back what the camera sees.
