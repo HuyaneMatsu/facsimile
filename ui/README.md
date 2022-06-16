@@ -4,7 +4,7 @@
 
 ### Create model
 
-1. First create an model with **VRoid studio**. Install it from Stream it is free & works on Linux.
+1. First create a model with **VRoid studio**. Install it from Steam as it is free & works on Linux.
    
 2. After you created it, **export it as VRM**.
 
@@ -17,7 +17,7 @@
 2. Install an editor with the *Unity Hub*.
     
     > It downloads the editor to a temporary file on Linux. Can be problem if you did not allocate enough memory for
-    > the operation system.
+    > the operating system.
 
 3. Open the `ui` directory as a project.
 
@@ -25,8 +25,8 @@
    
     If the editor has a `VRM0` tab you are all good! If not:
         
-        1. Go to the release the page and download the `.unitypackage` file.
-        2. Drag the file into the editor. Will ask a few things, just accept everything!
+        1. Go to the release page and download the `.unitypackage` file.
+        2. Drag the file into the editor 'Assets' tab. Will ask a few things, just accept everything!
 
 5. Import the model with `VRM0` -> `Import from VRM 0.x`.
 
@@ -39,32 +39,35 @@
     >
     > Please reset coordinates of the model to all `0`.
     >
-    > For now set the camera position to `0, 1.4, 0.8` as well and it's `y` axis rotation to `180`.
+    > For now set the camera position to `0, 1.4, 0.8` as well and its `y` axis rotation to `180`.
+    > If you can't find camera coordinates look at top left, there are the entities click on the camera one
 
-2. Copy paste the [**ModelControl.cs**](./Assets/ModelControl.cs) file to your project.
+2. Copy & paste the [**ModelControl.cs**](./Assets/ModelControl.cs) file to your project.
    
-> If you do not know where, put it into the `Assets` directory as well.
+> If you do not know where, put it into the `Assets` directory.
 
 3. Select your model, **Add Component**.
 
-4. Select the **ModelControl.cs** file.
+> Hide (Script)(s) section if it takes too much space because Add Component might be not visible unless you scroll down
 
-5. Assign the model to the **Avatar** field.
+5. Select the **ModelControl.cs** file.
+
+6. Assign the model to the **Avatar** field.
 
 ### Post words
 
-At this point you are basically done, if you have the tracker setup, just click on the play button in the unity editor.
+At this point you are basically done, if you have the tracker setup, just click on the play button in the Unity editor.
 
-By learning more about unity, you can customize many things, like inserting something behind you, creating an
+By learning more about Unity you can customize many things, like inserting something behind you, creating an
 application from the project & many more!
 
 ## Configuration
 
-At unity editor the Model control provides you with various settings.
+In Unity editor Model controls provide you with various settings.
 
 ##### Camera
 
-`camera_angle_vertical` (Defaults to `-15` degrees) refers to your camera's position. negative numbers are under
+`camera_angle_vertical` (Defaults to `-15` degrees) refers to your camera's position. Negative numbers are under
 your screen, meanwhile positive ones are on top of it.
 
 It is the best to keep it as close to `0` as you can. Handles negative numbers better than positive.

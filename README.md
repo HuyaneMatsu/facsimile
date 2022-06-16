@@ -10,7 +10,7 @@ The aim of the project to provide a free-to-play way for anyone to become a vtub
 
 #### Getting Started
 
-To setup the project for yourself you will need some idea about how to use a terminal & unity.
+To set up the project for yourself you will need some idea about how to use a terminal & unity.
 
 ##### Requirements
 
