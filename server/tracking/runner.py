@@ -219,14 +219,24 @@ def run():
                 try:
                     socket.send((
                         f'{PACKET_TYPE_MOVEMENT} '
-                        f'{iris_left_x:.4f} {iris_left_y:.4f} {iris_right_x:.4f} {iris_right_y:.4f} '
-                        f'{eye_openness_left:.4f} {eye_openness_right:.4f} '
-                        f'{head_x:.4f} {head_y:.4f} {head_z:.4f} '
-                        f'{mouth_openness_x:.4f} {mouth_openness_y:.4f} '
-                        f'{face_position_x:.4f} {face_position_y:.4f} {face_position_z:.4f} '
-                        f'{smile_ratio:.4f} {eyebrow_liftedness:.4f}'
+                        f'{iris_left_x:.4f} '
+                        f'{iris_left_y:.4f} '
+                        f'{iris_right_x:.4f} '
+                        f'{iris_right_y:.4f} '
+                        f'{eye_openness_left:.4f} '
+                        f'{eye_openness_right:.4f} '
+                        f'{head_x:.4f} '
+                        f'{head_y:.4f} '
+                        f'{head_z:.4f} '
+                        f'{mouth_openness_x:.4f} '
+                        f'{mouth_openness_y:.4f} '
+                        f'{face_position_x:.4f} '
+                        f'{face_position_y:.4f} '
+                        f'{face_position_z:.4f} '
+                        f'{smile_ratio:.4f} '
+                        f'{eyebrow_liftedness:.4f}'
                     ).encode())
-                except BrokenPipeError:
+                except (BrokenPipeError, ConnectionResetError):
                     break
             
             happiness, sadness, surprise, fear, disgust, anger = detect_expressions(landmarks, image)
@@ -243,9 +253,14 @@ def run():
                 try:
                     socket.send((
                         f'{PACKET_TYPE_EXPRESSION} '
-                        f'{happiness:.4f} {sadness:.4f} {surprise:.4f} {fear:.4f} {disgust:.4f} {anger:.4f}'
+                        f'{happiness:.4f} '
+                        f'{sadness:.4f} '
+                        f'{surprise:.4f} '
+                        f'{fear:.4f} '
+                        f'{disgust:.4f} '
+                        f'{anger:.4f}'
                     ).encode())
-                except BrokenPipeError:
+                except (BrokenPipeError, ConnectionResetError):
                     break
         
         else:

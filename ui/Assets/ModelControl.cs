@@ -9,6 +9,11 @@ using System.Net.Sockets;
 using System.Text;
 using System.Diagnostics;
 
+using Float32 = System.Single;
+using Float64 = System.Double;
+using Int32 = System.Int32;
+using UInt64 = System.UInt64;
+
 
 enum FACE_MESH {
     ALL_NATURAL,
@@ -153,31 +158,32 @@ public static class SECONDARY_BODY_PART_NAME {
 
 enum PACKET_TYPE {
     NONE,
-    MOVEMENT,
-    EXPRESSION
+    HEAD_MOVEMENT,
+    EXPRESSION,
+    BODY_MOVEMENT
 }
 
-public static class UTILS {
-    public static float square(float value) {
+public static class utils {
+    public static Float32 square(Float32 value) {
         return value * value;
     }
     
-    public static float point_difference(Vector3 point_1, Vector3 point_2) {
-        return (float)Math.Sqrt((double)(
-            UTILS.square(point_1.x - point_2.x) +
-            UTILS.square(point_1.y - point_2.y) +
-            UTILS.square(point_1.z - point_2.z)
+    public static Float32 point_difference(Vector3 point_1, Vector3 point_2) {
+        return (Float32)Math.Sqrt((Float64)(
+            utils.square(point_1.x - point_2.x) +
+            utils.square(point_1.y - point_2.y) +
+            utils.square(point_1.z - point_2.z)
         ));
     }
     
-    public static float point_difference_2d(float point_1_x, float point_1_y, float point_2_x, float point_2_y) {
-        return (float)Math.Sqrt((double)(
-            UTILS.square(point_1_x - point_2_x) +
-            UTILS.square(point_1_y - point_2_y)
+    public static Float32 point_difference_2d(Float32 point_1_x, Float32 point_1_y, Float32 point_2_x, Float32 point_2_y) {
+        return (Float32)Math.Sqrt((Float64)(
+            utils.square(point_1_x - point_2_x) +
+            utils.square(point_1_y - point_2_y)
         ));
     }
 
-    public static float merge_values(float value_1, float value_2) {
+    public static Float32 merge_values(Float32 value_1, Float32 value_2) {
         if (value_1 == 0.0f) {
             return value_2;
         } else if (value_2 == 0.0f) {
@@ -185,24 +191,164 @@ public static class UTILS {
         }
 
         if (value_1 < 0.0) {
-            value_1 = -UTILS.square(value_1);
+            value_1 = -utils.square(value_1);
         } else {
-            value_1 = UTILS.square(value_1);
+            value_1 = utils.square(value_1);
         }
 
         if (value_2 < 0.0) {
-            value_2 = -UTILS.square(value_2);
+            value_2 = -utils.square(value_2);
         } else {
-            value_2 = UTILS.square(value_2);
+            value_2 = utils.square(value_2);
         }
 
-        float sum = value_1 + value_2;
+        Float32 sum = value_1 + value_2;
 
         if (sum < 0.0) {
-            return -(float)Math.Sqrt((double)(-sum));
+            return -(Float32)Math.Sqrt((Float64)(-sum));
         } else {
-            return (float)Math.Sqrt((double)sum);
+            return (Float32)Math.Sqrt((Float64)sum);
         }
+    }
+    
+    public static UInt64 get_length_of(Array array) {
+        return (UInt64)array.Length;
+    }
+    
+    public static Float32 string_to_float32(String value)
+    {
+        return Float32.Parse(value);
+    }
+    
+    public static Float32[] string_to_float32(String[] string_array)
+    {
+        UInt64 array_length = utils.get_length_of(string_array);
+        Float32[] float32_array = new Float32[array_length];
+        
+        for (UInt64 index = 0; index < array_length; index += 1) {
+            float32_array[index] = string_to_float32(string_array[index]);
+        }
+        
+        return float32_array;
+    }
+    
+    public static ElementType[] slice_array<ElementType>(
+        ElementType[] array,
+        UInt64 start = 0,
+        UInt64 end = UInt64.MaxValue,
+        UInt64 step = 1
+    ) {
+        UInt64 array_length = utils.get_length_of(array);
+        if (end > array_length) {
+            end = array_length;
+        }
+        
+        if (end < start) {
+            end = start;
+        }
+        
+        if (step == 0) {
+            step = 1;
+        }
+        
+        UInt64 checked_area = end - start;
+        UInt64 new_array_length = checked_area / step + Convert.ToUInt64(checked_area % step != 0);
+        
+        ElementType[] new_array = new ElementType[new_array_length];
+        
+        UInt64 old_array_index = start;
+        UInt64 new_array_index = 0;
+        
+        while (true) {
+            if (old_array_index >= end) {
+                break;
+            }
+            
+            new_array[new_array_index] = array[old_array_index];
+            
+            new_array_index += 1;
+            old_array_index += step;
+        }
+        
+        return new_array;
+    }
+}
+
+
+public class HeadMovementData {
+    public Float32 iris_left_x = 0.0f;
+    public Float32 iris_left_y = 0.0f;
+    public Float32 iris_right_x = 0.0f;
+    public Float32 iris_right_y = 0.0f;
+    public Float32 eye_openness_left = 0.0f;
+    public Float32 eye_openness_right = 0.0f;
+    public Float32 head_x = 0.0f;
+    public Float32 head_y = 0.0f;
+    public Float32 head_z = 0.0f;
+    public Float32 mouth_openness_x = 0.0f;
+    public Float32 mouth_openness_y = 0.0f;
+    public Float32 face_position_x = 0.0f;
+    public Float32 face_position_y = 0.0f;
+    public Float32 face_position_z = 0.0f;
+    public Float32 smile_ratio = 0.0f;
+    public Float32 eyebrow_liftedness = 0.0f;
+    
+    public HeadMovementData() {}
+    
+    public HeadMovementData(Float32[] packet_data) {
+        this.iris_left_x = packet_data[0];
+        this.iris_left_y = packet_data[1];
+        
+        this.iris_right_x = packet_data[2];
+        this.iris_right_y = packet_data[3];
+
+        this.eye_openness_left = packet_data[4];
+        this.eye_openness_right = packet_data[5];
+
+        this.head_x = packet_data[6];
+        this.head_y = packet_data[7];
+        this.head_z = packet_data[8];
+
+        this.mouth_openness_x = packet_data[9];
+        this.mouth_openness_y = packet_data[10];
+
+        this.face_position_y = packet_data[11];
+        this.face_position_x = packet_data[12];
+        this.face_position_z = packet_data[13];
+
+        this.smile_ratio = packet_data[14];
+        this.eyebrow_liftedness = packet_data[15];
+    }
+}
+
+
+public class ExpressionData {
+    public Float32 happiness = 0.0f;
+    public Float32 sadness = 0.0f;
+    public Float32 surprise = 0.0f;
+    public Float32 fear = 0.0f;
+    public Float32 disgust = 0.0f;
+    public Float32 anger = 0.0f;
+    
+    public ExpressionData() {}
+    
+    public ExpressionData(Float32[] packet_data) {
+        this.happiness = packet_data[0];
+        this.sadness = packet_data[1];
+        this.surprise = packet_data[2];
+        this.fear = packet_data[3];
+        this.disgust = packet_data[4];
+        this.anger = packet_data[5];
+    }
+}
+
+
+public class BodyMovementData {
+    // No fields yet
+    
+    public BodyMovementData() {}
+    
+    public BodyMovementData(Float32[] packet_data) {
     }
 }
 
@@ -215,42 +361,42 @@ public class ModelControl : MonoBehaviour {
     [Header("Camera")]
     [SerializeField]
     [Range(-15.0f, +15.0f)]
-    public float camera_angle_vertical = -15.0f;
+    public Float32 camera_angle_vertical = -15.0f;
 
     [Header("Arms")]
     [SerializeField]
     [Range(-90.0f, 0.0f)]
-    public float right_arm_angle = -60.0f;
+    public Float32 right_arm_angle = -60.0f;
 
     [SerializeField]
-    [Range(0.0f, 90.0f)]
-    public float left_arm_angle = +60.0f;
+    [Range(-90.0f, 0.0f)]
+    public Float32 left_arm_angle = -60.0f;
 
     [Header("Mouth")]
     [SerializeField]
     [Range(50.0f, 80.0f)]
-    public float default_mouth_openness_horizontal = +73.0f;
+    public Float32 default_mouth_openness_horizontal = +73.0f;
 
     [SerializeField]
     [Range(10.0f, 40.0f)]
-    public float default_mouth_openness_vertical = +26.0f;
+    public Float32 default_mouth_openness_vertical = +26.0f;
 
     [Header("Eyes")]
     [SerializeField]
     [Range(30.0f, 70.0f)]
-    public float open_eye_at = 50.0f;
+    public Float32 open_eye_at = 50.0f;
     [SerializeField]
-    [Range(10.0f, 30.0f)]
-    public float close_eye_at = 20.0f;
+    [Range(10.0f, 50.0f)]
+    public Float32 close_eye_at = 25.0f;
 
     [Header("Position")]
     [SerializeField]
     [Range(-10.0f, 10.0f)]
-    public float default_position_deepness = 0.0f;
+    public Float32 default_position_deepness = 0.0f;
     [Range(-10.0f, 10.0f)]
-    public float default_position_horizontal = 0.0f;
+    public Float32 default_position_horizontal = 0.0f;
     [Range(-10.0f, 10.0f)]
-    public float default_position_vertical = 0.0f;
+    public Float32 default_position_vertical = 0.0f;
     [SerializeField]
     public bool lock_position_deepness = true;
     [SerializeField]
@@ -262,144 +408,104 @@ public class ModelControl : MonoBehaviour {
     [Header("Smoothing")]
     [SerializeField]
     [Range(1, 60)]
-    public int application_fps = 30;
+    public Int32 application_fps = 30;
     [Range(1, 60)]
-    public int server_fps = 15;
+    public Int32 server_fps = 15;
 
-    private int smooth_level = 1;
-    private int movement_smooth_step = 0;
-    private int expression_smooth_step = 0;
+    private Int32 smooth_level = 1;
+    private Int32 head_movement_smooth_step = 0;
+    private Int32 expression_smooth_step = 0;
+    private Int32 body_movement_smooth_step = 0;
 
-    private const float blinkage_speed = 12.0f;
-    private int blinkage_steps = 8;
+    private const Float32 blinkage_speed = 12.0f;
+    private Int32 blinkage_steps = 8;
 
     [Header("Hair")]
     [SerializeField]
     [Range(0.0f, 4.0f)]
-    public float hair_stiffness = 0.36f;
+    public Float32 hair_stiffness = 0.36f;
     [SerializeField]
     [Range(0.0f, 1.0f)]
-    public float hair_gravity = 0.08f;
+    public Float32 hair_gravity = 0.08f;
     [SerializeField]
     [Range(0.0f, 1.0f)]
-    public float hair_drag = 1.0f;
+    public Float32 hair_drag = 1.0f;
 
 
     [Header("Chest")]
     [SerializeField]
     [Range(0.0f, 4.0f)]
-    public float chest_stiffness = 0.2f;
+    public Float32 chest_stiffness = 0.2f;
     [SerializeField]
     [Range(0.0f, 1.0f)]
-    public float chest_gravity = 0.05f;
+    public Float32 chest_gravity = 0.05f;
     [SerializeField]
     [Range(0.0f, 1.0f)]
-    public float chest_drag = 0.2f;
+    public Float32 chest_drag = 0.2f;
 
 
     [Header("Movements")]
     [Range(-16.0f, +8.0f)]
-    public float iris_left_x = 0.0f;
+    public Float32 iris_left_x = 0.0f;
     [Range(-10.0f, +10.0f)]
-    public float iris_left_y = 0.0f;
+    public Float32 iris_left_y = 0.0f;
     [Range(-8.0f, +16.0f)]
-    public float iris_right_x = 0.0f;
+    public Float32 iris_right_x = 0.0f;
     [Range(-10.0f, +10.0f)]
-    public float iris_right_y = 0.0f;
+    public Float32 iris_right_y = 0.0f;
 
     [Range(+0.0f, +100.0f)]
-    public float eye_openness_left = 0.0f;
+    public Float32 eye_openness_left = 0.0f;
     [Range(+0.0f, 100.0f)]
-    public float eye_openness_right = 0.0f;
+    public Float32 eye_openness_right = 0.0f;
 
     [Range(-90.0f, +90.0f)]
-    public float head_x = 0.0f;
+    public Float32 head_x = 0.0f;
     [Range(-60.0f, +30.0f)]
-    public float head_y = 0.0f;
+    public Float32 head_y = 0.0f;
     [Range(-90.0f, +90.0f)]
-    public float head_z = 0.0f;
+    public Float32 head_z = 0.0f;
 
     [Range(-0.0f, +100.0f)]
-    public float mouth_openness_x = 0.0f;
+    public Float32 mouth_openness_x = 0.0f;
     [Range(-0.0f, +100.0f)]
-    public float mouth_openness_y = 0.0f;
+    public Float32 mouth_openness_y = 0.0f;
 
     [Range(-5.0f, +5.0f)]
-    public float face_position_x = 0.0f;
+    public Float32 face_position_x = 0.0f;
     [Range(-5.0f, +5.0f)]
-    public float face_position_y = 0.0f;
+    public Float32 face_position_y = 0.0f;
     [Range(-10.0f, -1.0f)]
-    public float face_position_z = 0.0f;
+    public Float32 face_position_z = 0.0f;
 
     [Range(0.0f, 100.0f)]
-    public float smile_ratio = 0.0f;
+    public Float32 smile_ratio = 0.0f;
     [Range(0.0f, 100.0f)]
-    public float eyebrow_liftedness = 0.0f;
+    public Float32 eyebrow_liftedness = 0.0f;
 
     [Header("Expressions")]
     [Range(0.0f, 100.0f)]
-    public float happiness = 0.0f;
+    public Float32 happiness = 0.0f;
     [Range(0.0f, 100.0f)]
-    public float sadness = 0.0f;
+    public Float32 sadness = 0.0f;
     [Range(0.0f, 100.0f)]
-    public float surprise = 0.0f;
+    public Float32 surprise = 0.0f;
     [Range(0.0f, 100.0f)]
-    public float fear = 0.0f;
+    public Float32 fear = 0.0f;
     [Range(0.0f, 100.0f)]
-    public float disgust = 0.0f;
+    public Float32 disgust = 0.0f;
     [Range(0.0f, 100.0f)]
-    public float anger = 0.0f;
+    public Float32 anger = 0.0f;
     
-
-    private float target_iris_left_x = 0.0f;
-    private float target_iris_left_y = 0.0f;
-    private float target_iris_right_x = 0.0f;
-    private float target_iris_right_y = 0.0f;
-    private float target_eye_openness_left = 0.0f;
-    private float target_eye_openness_right = 0.0f;
-    private float target_head_x = 0.0f;
-    private float target_head_y = 0.0f;
-    private float target_head_z = 0.0f;
-    private float target_mouth_openness_x = 0.0f;
-    private float target_mouth_openness_y = 0.0f;
-    private float target_face_position_x = 0.0f;
-    private float target_face_position_y = 0.0f;
-    private float target_face_position_z = 0.0f;
-    private float target_smile_ratio = 0.0f;
-    private float target_eyebrow_liftedness = 0.0f;
-
-    private float target_happiness = 0.0f;
-    private float target_sadness = 0.0f;
-    private float target_surprise = 0.0f;
-    private float target_fear = 0.0f;
-    private float target_disgust = 0.0f;
-    private float target_anger = 0.0f;
-
-
-    private float step_iris_left_x = 0.0f;
-    private float step_iris_left_y = 0.0f;
-    private float step_iris_right_x = 0.0f;
-    private float step_iris_right_y = 0.0f;
-    private float step_eye_openness_left = 0.0f;
-    private float step_eye_openness_right = 0.0f;
-    private float step_head_x = 0.0f;
-    private float step_head_y = 0.0f;
-    private float step_head_z = 0.0f;
-    private float step_mouth_openness_x = 0.0f;
-    private float step_mouth_openness_y = 0.0f;
-    private float step_face_position_x = 0.0f;
-    private float step_face_position_y = 0.0f;
-    private float step_face_position_z = 0.0f;
-    private float step_smile_ratio = 0.0f;
-    private float step_eyebrow_liftedness = 0.0f;
-
-    private float step_happiness = 0.0f;
-    private float step_sadness = 0.0f;
-    private float step_surprise = 0.0f;
-    private float step_fear = 0.0f;
-    private float step_disgust = 0.0f;
-    private float step_anger = 0.0f;
-
+    // Movements
+    
+    private HeadMovementData head_movement_target = null;
+    private ExpressionData expression_target = null;
+    private BodyMovementData body_movement_target = null;
+    
+    private HeadMovementData head_movement_step = null;
+    private ExpressionData expression_step = null;
+    private BodyMovementData body_movement_step = null;
 
     // body parts
     private GameObject eye_right = null;
@@ -415,7 +521,7 @@ public class ModelControl : MonoBehaviour {
     private GameObject arm_upper_left = null;
     private GameObject arm_lower_right = null;
     private GameObject arm_lower_left = null;
-    private float shoulder_length = 0.0f;
+    private Float32 shoulder_length = 0.0f;
     private GameObject body_root = null;
     private GameObject hips = null;
 
@@ -427,7 +533,7 @@ public class ModelControl : MonoBehaviour {
     private TcpClient tcp_client = null;
     
     // Connection
-    private int port = 5050;
+    private Int32 port = 5050;
     private string address = "127.0.0.1";
     
     // eye close
@@ -437,46 +543,46 @@ public class ModelControl : MonoBehaviour {
     private bool did_left_eye_close = false;
     private bool did_right_eye_close = false;
 
-    private int left_eye_close_step = 0;
-    private int right_eye_close_step = 0;
+    private Int32 left_eye_close_step = 0;
+    private Int32 right_eye_close_step = 0;
 
 
     /* This will be changed at startup, no worries */
-    private float head_size = 1.0f;
+    private Float32 head_size = 1.0f;
     private Vector3 hips_position = new Vector3(0.0f, 0.0f, 0.0f);
 
     // Expressions
-    private float expression_eye_close_left = 0.0f;
-    private float expression_eye_close_right = 0.0f;
-    private float expression_eye_fun = 0.0f;
-    private float expression_eye_surprised = 0.0f;
-    private float expression_eye_joy_left = 0.0f;
-    private float expression_eye_joy_right = 0.0f;
-    private float expression_eye_angry = 0.0f;
-    private float expression_eye_spread = 0.0f;
-    private float expression_eye_sorrow = 0.0f;
-    private float expression_eye_highlight_hide = 0.0f;
+    private Float32 expression_eye_close_left = 0.0f;
+    private Float32 expression_eye_close_right = 0.0f;
+    private Float32 expression_eye_fun = 0.0f;
+    private Float32 expression_eye_surprised = 0.0f;
+    private Float32 expression_eye_joy_left = 0.0f;
+    private Float32 expression_eye_joy_right = 0.0f;
+    private Float32 expression_eye_angry = 0.0f;
+    private Float32 expression_eye_spread = 0.0f;
+    private Float32 expression_eye_sorrow = 0.0f;
+    private Float32 expression_eye_highlight_hide = 0.0f;
 
-    private float expression_eyebrow_fun = 0.0f;
-    private float expression_eyebrow_surprised = 0.0f;
-    private float expression_eyebrow_angry = 0.0f;
-    private float expression_eyebrow_joy = 0.0f;
-    private float expression_eyebrow_sorrow = 0.0f;
+    private Float32 expression_eyebrow_fun = 0.0f;
+    private Float32 expression_eyebrow_surprised = 0.0f;
+    private Float32 expression_eyebrow_angry = 0.0f;
+    private Float32 expression_eyebrow_joy = 0.0f;
+    private Float32 expression_eyebrow_sorrow = 0.0f;
 
-    private float expression_mouth_a = 0.0f;
-    private float expression_mouth_i = 0.0f;
-    private float expression_mouth_u = 0.0f;
-    private float expression_mouth_o = 0.0f;
-    private float expression_mouth_fun = 0.0f;
-    private float expression_mouth_surprised = 0.0f;
-    private float expression_mouth_joy = 0.0f;
-    private float expression_mouth_angry = 0.0f;
-    private float expression_mouth_neutral = 0.0f;
-    private float expression_mouth_up = 0.0f;
-    private float expression_mouth_sorrow = 0.0f;
+    private Float32 expression_mouth_a = 0.0f;
+    private Float32 expression_mouth_i = 0.0f;
+    private Float32 expression_mouth_u = 0.0f;
+    private Float32 expression_mouth_o = 0.0f;
+    private Float32 expression_mouth_fun = 0.0f;
+    private Float32 expression_mouth_surprised = 0.0f;
+    private Float32 expression_mouth_joy = 0.0f;
+    private Float32 expression_mouth_angry = 0.0f;
+    private Float32 expression_mouth_neutral = 0.0f;
+    private Float32 expression_mouth_up = 0.0f;
+    private Float32 expression_mouth_sorrow = 0.0f;
 
-    private float expression_teeth_short_bot = 0.0f;
-    private float expression_teeth_short_top = 0.0f;
+    private Float32 expression_teeth_short_bot = 0.0f;
+    private Float32 expression_teeth_short_top = 0.0f;
 
     // Connection Methods
     
@@ -498,7 +604,7 @@ public class ModelControl : MonoBehaviour {
         
         TcpClient tcp_client;
         Byte[] payload_buffer;
-        int length;
+        UInt64 length;
         NetworkStream stream;
         
         try {          
@@ -515,13 +621,13 @@ public class ModelControl : MonoBehaviour {
                     
                     using (stream = tcp_client.GetStream()) {
                         while (true) {
-                            length = stream.Read(payload_buffer, 0, payload_buffer.Length);
+                            length = (UInt64)stream.Read(payload_buffer, 0, (Int32)utils.get_length_of(payload_buffer));
                             if (length == 0) {
                                 break;
                             }
                             
                             var received_payload = new byte[length];
-                            Array.Copy(payload_buffer, 0, received_payload, 0, length);
+                            Array.Copy(payload_buffer, 0, received_payload, 0, (Int32)length);
                             
                             string received_message = Encoding.ASCII.GetString(received_payload);
                             this.process_packet(received_message.Split(' '));
@@ -544,160 +650,205 @@ public class ModelControl : MonoBehaviour {
     }
 
     public void process_packet(string[] values) {
-        PACKET_TYPE packet_type = (PACKET_TYPE)int.Parse(values[0]);
-
-        if (packet_type == PACKET_TYPE.MOVEMENT) {
-            this.update_movement_attributes(values);
+        PACKET_TYPE packet_type = (PACKET_TYPE)Int32.Parse(values[0]);
+        
+        Float32[] packet_data = utils.string_to_float32(utils.slice_array<String>(values, start: 1));
+        
+        if (packet_type == PACKET_TYPE.HEAD_MOVEMENT) {
+            this.set_head_movement(packet_data);
         } else if (packet_type == PACKET_TYPE.EXPRESSION) {
-            this.update_expression_attributes(values);
+            this.set_expression(packet_data);
+        } else if (packet_type == PACKET_TYPE.BODY_MOVEMENT) {
+            this.set_body_movement(packet_data);
         }
     }
 
-    void update_movement_attributes(string[] floats) {
-        this.target_iris_left_x = float.Parse(floats[1]);
-
-        this.target_iris_left_y = float.Parse(floats[2]);
-        this.target_iris_right_x = float.Parse(floats[3]);
-
-        this.target_iris_right_y = float.Parse(floats[4]);
-
-        this.target_eye_openness_left = float.Parse(floats[5]);
-        this.target_eye_openness_right = float.Parse(floats[6]);
-
-        this.target_head_x = float.Parse(floats[7]);
-        this.target_head_y = float.Parse(floats[8]);
-        this.target_head_z = float.Parse(floats[9]);
-
-        this.target_mouth_openness_x = float.Parse(floats[10]);
-        this.target_mouth_openness_y = float.Parse(floats[11]);
-
-        this.target_face_position_y = float.Parse(floats[12]);
-        this.target_face_position_x = float.Parse(floats[13]);
-        this.target_face_position_z = float.Parse(floats[14]);
-
-        this.target_smile_ratio = float.Parse(floats[15]);
-        this.target_eyebrow_liftedness = float.Parse(floats[16]);
-
-        this.movement_smooth_step = 0;
+    void set_head_movement(Float32[] packet_data) {
+        this.head_movement_target = new HeadMovementData(packet_data);
+        this.head_movement_smooth_step = 0;
     }
 
-    void update_expression_attributes(string[] floats) {
-        this.target_happiness = float.Parse(floats[1]);
-        this.target_sadness = float.Parse(floats[2]);
-        this.target_surprise = float.Parse(floats[3]);
-        this.target_fear = float.Parse(floats[4]);
-        this.target_disgust = float.Parse(floats[5]);
-        this.target_anger = float.Parse(floats[6]);
-
+    void set_expression(Float32[] packet_data) {
+        this.expression_target = new ExpressionData(packet_data);
         this.expression_smooth_step = 0;
     }
 
+    void set_body_movement(Float32[] packet_data) {
+        this.body_movement_target = new BodyMovementData(packet_data);
+        this.body_movement_smooth_step = 0;
+    }
 
-    void do_movement_smooth_step() {
-        int smooth_level = this.smooth_level;
-        int smooth_step = this.movement_smooth_step;
-        this.movement_smooth_step = smooth_step + 1;
+
+    void do_head_movement_smooth_step(HeadMovementData head_movement_target) {
+        if (head_movement_target == null) {
+            return;
+        }
+        
+        Int32 smooth_level = this.smooth_level;
+        Int32 smooth_step = this.head_movement_smooth_step;
+        this.head_movement_smooth_step = smooth_step + 1;
 
         if (smooth_level == 1) {
             if (smooth_step == 0) {
-                this.iris_left_x = this.target_iris_left_x;
-                this.iris_left_y = this.target_iris_left_y;
-                this.iris_right_x = this.target_iris_right_x;
-                this.iris_right_y = this.target_iris_right_y;
-                this.eye_openness_left = this.target_eye_openness_left;
-                this.eye_openness_right = this.target_eye_openness_right;
-                this.head_x = this.target_head_x;
-                this.head_y = this.target_head_y;
-                this.head_z = this.target_head_z;
-                this.mouth_openness_x = this.target_mouth_openness_x;
-                this.mouth_openness_y = this.target_mouth_openness_y;
-                this.face_position_x = this.target_face_position_x;
-                this.face_position_y = this.target_face_position_y;
-                this.face_position_z = this.target_face_position_z;
-                this.smile_ratio = this.target_smile_ratio;
-                this.eyebrow_liftedness = this.target_eyebrow_liftedness;
+                this.iris_left_x = head_movement_target.iris_left_x;
+                this.iris_left_y = head_movement_target.iris_left_y;
+                this.iris_right_x = head_movement_target.iris_right_x;
+                this.iris_right_y = head_movement_target.iris_right_y;
+                this.eye_openness_left = head_movement_target.eye_openness_left;
+                this.eye_openness_right = head_movement_target.eye_openness_right;
+                this.head_x = head_movement_target.head_x;
+                this.head_y = head_movement_target.head_y;
+                this.head_z = head_movement_target.head_z;
+                this.mouth_openness_x = head_movement_target.mouth_openness_x;
+                this.mouth_openness_y = head_movement_target.mouth_openness_y;
+                this.face_position_x = head_movement_target.face_position_x;
+                this.face_position_y = head_movement_target.face_position_y;
+                this.face_position_z = head_movement_target.face_position_z;
+                this.smile_ratio = head_movement_target.smile_ratio;
+                this.eyebrow_liftedness = head_movement_target.eyebrow_liftedness;
             }
         } else {
+            HeadMovementData head_movement_step;
+            
             if (smooth_step == 0) {
-                this.step_iris_left_x = (this.target_iris_left_x - this.iris_left_x) / smooth_level;
-                this.step_iris_left_y = (this.target_iris_left_y - this.iris_left_y) / smooth_level;
-                this.step_iris_right_x = (this.target_iris_right_x - this.iris_right_x) / smooth_level;
-                this.step_iris_right_y = (this.target_iris_right_y - this.iris_right_y) / smooth_level;
-                this.step_eye_openness_left = (
-                    (this.target_eye_openness_left - this.eye_openness_left) / smooth_level
+                head_movement_step = new HeadMovementData();
+                this.head_movement_step = head_movement_step;
+                
+                head_movement_step.iris_left_x = (head_movement_target.iris_left_x - this.iris_left_x) / smooth_level;
+                head_movement_step.iris_left_y = (head_movement_target.iris_left_y - this.iris_left_y) / smooth_level;
+                head_movement_step.iris_right_x = (head_movement_target.iris_right_x - this.iris_right_x) / smooth_level;
+                head_movement_step.iris_right_y = (head_movement_target.iris_right_y - this.iris_right_y) / smooth_level;
+                head_movement_step.eye_openness_left = (
+                    (head_movement_target.eye_openness_left - this.eye_openness_left) / smooth_level
                 );
-                this.step_eye_openness_right = (
-                    (this.target_eye_openness_right - this.eye_openness_right) / smooth_level
+                head_movement_step.eye_openness_right = (
+                    (head_movement_target.eye_openness_right - this.eye_openness_right) / smooth_level
                 );
-                this.step_head_x = (this.target_head_x - this.head_x) / smooth_level;
-                this.step_head_y = (this.target_head_y - this.head_y) / smooth_level;
-                this.step_head_z = (this.target_head_z - this.head_z) / smooth_level;
-                this.step_mouth_openness_x = (this.target_mouth_openness_x - this.mouth_openness_x) / smooth_level;
-                this.step_mouth_openness_y = (this.target_mouth_openness_y - this.mouth_openness_y) / smooth_level;
-                this.step_face_position_x = (this.target_face_position_x - this.face_position_x) / smooth_level;
-                this.step_face_position_y = (this.target_face_position_y - this.face_position_y) / smooth_level;
-                this.step_face_position_z = (this.target_face_position_z - this.face_position_z) / smooth_level;
-                this.step_smile_ratio = (this.target_smile_ratio - this.smile_ratio) / smooth_level;
-                this.step_eyebrow_liftedness = (this.target_eyebrow_liftedness - this.eyebrow_liftedness) / smooth_level;
+                head_movement_step.head_x = (head_movement_target.head_x - this.head_x) / smooth_level;
+                head_movement_step.head_y = (head_movement_target.head_y - this.head_y) / smooth_level;
+                head_movement_step.head_z = (head_movement_target.head_z - this.head_z) / smooth_level;
+                head_movement_step.mouth_openness_x = (head_movement_target.mouth_openness_x - this.mouth_openness_x) / smooth_level;
+                head_movement_step.mouth_openness_y = (head_movement_target.mouth_openness_y - this.mouth_openness_y) / smooth_level;
+                head_movement_step.face_position_x = (head_movement_target.face_position_x - this.face_position_x) / smooth_level;
+                head_movement_step.face_position_y = (head_movement_target.face_position_y - this.face_position_y) / smooth_level;
+                head_movement_step.face_position_z = (head_movement_target.face_position_z - this.face_position_z) / smooth_level;
+                head_movement_step.smile_ratio = (head_movement_target.smile_ratio - this.smile_ratio) / smooth_level;
+                head_movement_step.eyebrow_liftedness = (head_movement_target.eyebrow_liftedness - this.eyebrow_liftedness) / smooth_level;
 
             } else if (smooth_step >= smooth_level) {
                 goto skip_step;
+            } else {
+                head_movement_step = this.head_movement_step;
+                if (head_movement_step == null) {
+                    goto skip_step;
+                }
             }
 
-            this.iris_left_x += this.step_iris_left_x;
-            this.iris_left_y += this.step_iris_left_y;
-            this.iris_right_x += this.step_iris_right_x;
-            this.iris_right_y += this.step_iris_right_y;
-            this.eye_openness_left += this.step_eye_openness_left;
-            this.eye_openness_right += this.step_eye_openness_right;
-            this.head_x += this.step_head_x;
-            this.head_y += this.step_head_y;
-            this.head_z += this.step_head_z;
-            this.mouth_openness_x += this.step_mouth_openness_x;
-            this.mouth_openness_y += this.step_mouth_openness_y;
-            this.face_position_x += this.step_face_position_x;
-            this.face_position_y += this.step_face_position_y;
-            this.face_position_z += this.step_face_position_z;
-            this.smile_ratio += this.step_smile_ratio;
-            this.eyebrow_liftedness += this.step_eyebrow_liftedness;
+            this.iris_left_x += head_movement_step.iris_left_x;
+            this.iris_left_y += head_movement_step.iris_left_y;
+            this.iris_right_x += head_movement_step.iris_right_x;
+            this.iris_right_y += head_movement_step.iris_right_y;
+            this.eye_openness_left += head_movement_step.eye_openness_left;
+            this.eye_openness_right += head_movement_step.eye_openness_right;
+            this.head_x += head_movement_step.head_x;
+            this.head_y += head_movement_step.head_y;
+            this.head_z += head_movement_step.head_z;
+            this.mouth_openness_x += head_movement_step.mouth_openness_x;
+            this.mouth_openness_y += head_movement_step.mouth_openness_y;
+            this.face_position_x += head_movement_step.face_position_x;
+            this.face_position_y += head_movement_step.face_position_y;
+            this.face_position_z += head_movement_step.face_position_z;
+            this.smile_ratio += head_movement_step.smile_ratio;
+            this.eyebrow_liftedness += head_movement_step.eyebrow_liftedness;
 
             skip_step:;
         }
     }
 
-    void do_expression_smooth_step() {
-        int smooth_level = this.smooth_level;
-        int smooth_step = this.expression_smooth_step;
+    void do_expression_smooth_step(ExpressionData expression_target) {
+        if (expression_target == null) {
+            return;
+        }
+        
+        Int32 smooth_level = this.smooth_level;
+        Int32 smooth_step = this.expression_smooth_step;
         this.expression_smooth_step = smooth_step + 1;
 
         if (smooth_level == 1) {
             if (smooth_step == 0) {
-                this.happiness = this.target_happiness;
-                this.sadness = this.target_sadness;
-                this.surprise = this.target_surprise;
-                this.fear = this.target_fear;
-                this.disgust = this.target_disgust;
-                this.anger = this.target_anger;
+                this.happiness = expression_target.happiness;
+                this.sadness = expression_target.sadness;
+                this.surprise = expression_target.surprise;
+                this.fear = expression_target.fear;
+                this.disgust = expression_target.disgust;
+                this.anger = expression_target.anger;
             }
         } else {
+            ExpressionData expression_step;
+            
             if (smooth_step == 0) {
-                this.step_happiness = (this.target_happiness - this.happiness) / smooth_level;
-                this.step_sadness = (this.target_sadness - this.sadness) / smooth_level;
-                this.step_surprise = (this.target_surprise - this.surprise) / smooth_level;
-                this.step_fear = (this.target_fear - this.fear) / smooth_level;
-                this.step_disgust = (this.target_disgust - this.disgust) / smooth_level;
-                this.step_anger = (this.target_anger - this.anger) / smooth_level;
+                expression_step = new ExpressionData();
+                this.expression_step = expression_step;
+            
+                expression_step.happiness = (expression_target.happiness - this.happiness) / smooth_level;
+                expression_step.sadness = (expression_target.sadness - this.sadness) / smooth_level;
+                expression_step.surprise = (expression_target.surprise - this.surprise) / smooth_level;
+                expression_step.fear = (expression_target.fear - this.fear) / smooth_level;
+                expression_step.disgust = (expression_target.disgust - this.disgust) / smooth_level;
+                expression_step.anger = (expression_target.anger - this.anger) / smooth_level;
 
             } else if (smooth_step >= smooth_level) {
                 goto skip_step;
+            } else {
+                expression_step = this.expression_step;
+                if (expression_step == null) {
+                    goto skip_step;
+                }
             }
 
-            this.happiness += this.step_happiness;
-            this.sadness += this.step_sadness;
-            this.surprise += this.step_surprise;
-            this.fear += this.step_fear;
-            this.disgust += this.step_disgust;
-            this.anger += this.step_anger;
+            this.happiness += expression_step.happiness;
+            this.sadness += expression_step.sadness;
+            this.surprise += expression_step.surprise;
+            this.fear += expression_step.fear;
+            this.disgust += expression_step.disgust;
+            this.anger += expression_step.anger;
+
+            skip_step:;
+        }
+    }
+
+    void do_body_movement_smooth_step(BodyMovementData body_movement_target) {
+        if (body_movement_target == null) {
+            return;
+        }
+        
+        Int32 smooth_level = this.smooth_level;
+        Int32 smooth_step = this.body_movement_smooth_step;
+        this.body_movement_smooth_step = smooth_step + 1;
+
+        if (smooth_level == 1) {
+            if (smooth_step == 0) {
+                // this.thing = body_movement_target.thing;
+            }
+        } else {
+            BodyMovementData body_movement_step;
+            
+            if (smooth_step == 0) {
+                body_movement_step = new BodyMovementData();
+                this.body_movement_step = body_movement_step;
+                
+                // body_movement_step.thing = (body_movement_target.thing - this.thing) / smooth_level;
+                
+            } else if (smooth_step >= smooth_level) {
+                goto skip_step;
+            } else {
+                body_movement_step = this.body_movement_step;
+                if (body_movement_step == null) {
+                    goto skip_step;
+                }
+            }
+
+            // this.thing += body_movement_step.thing;
 
             skip_step:;
         }
@@ -802,7 +953,7 @@ public class ModelControl : MonoBehaviour {
     }
 
 
-    void try_adjust_colliders_of(GameObject game_object, float by) {
+    void try_adjust_colliders_of(GameObject game_object, Float32 by) {
         VRMSpringBoneColliderGroup collider_groups;
         if (game_object == null) {
             collider_groups = null;
@@ -870,9 +1021,9 @@ public class ModelControl : MonoBehaviour {
                     Vector3 chest_left_mid_position = chest_left_mid.transform.position - chest_upper_position;
                     Vector3 chest_right_mid_position = chest_right_mid.transform.position - chest_upper_position;
 
-                    float collision_box_size = (
-                        UTILS.point_difference(chest_left_root_position, chest_left_mid_position) +
-                        UTILS.point_difference(chest_right_root_position, chest_right_mid_position)
+                    Float32 collision_box_size = (
+                        utils.point_difference(chest_left_root_position, chest_left_mid_position) +
+                        utils.point_difference(chest_right_root_position, chest_right_mid_position)
                     );
 
                     VRMSpringBoneColliderGroup.SphereCollider[] new_colliders = (
@@ -913,7 +1064,7 @@ public class ModelControl : MonoBehaviour {
                 VRMSpringBoneColliderGroup.SphereCollider[] colliders = neck_collider_group.Colliders;
                 if (colliders.Length == 1) {
                     VRMSpringBoneColliderGroup.SphereCollider collider = colliders[0];
-                    float radius = collider.Radius * 1.1f;
+                    Float32 radius = collider.Radius * 1.1f;
                     collider.Radius = radius;
                     Vector3 position_difference = head.transform.position - neck.transform.position;
 
@@ -977,8 +1128,8 @@ public class ModelControl : MonoBehaviour {
             (shoulder_left != null)
         ) {
             this.shoulder_length = (
-                UTILS.point_difference(arm_upper_right.transform.position, shoulder_right.transform.position) +
-                UTILS.point_difference(arm_upper_right.transform.position, shoulder_left.transform.position)
+                utils.point_difference(arm_upper_right.transform.position, shoulder_right.transform.position) +
+                utils.point_difference(arm_upper_right.transform.position, shoulder_left.transform.position)
             ) * 0.5f;
         }
     }
@@ -1017,10 +1168,10 @@ public class ModelControl : MonoBehaviour {
     }
 
     void set_fps() {
-        int application_fps = this.application_fps;
+        Int32 application_fps = this.application_fps;
         Application.targetFrameRate = application_fps;
 
-        int smooth_level = Convert.ToInt32(
+        Int32 smooth_level = Convert.ToInt32(
             Math.Ceiling(
                 Convert.ToDouble((application_fps)) /
                 Convert.ToDouble((this.server_fps))
@@ -1032,9 +1183,9 @@ public class ModelControl : MonoBehaviour {
         }
         this.smooth_level = smooth_level;
 
-        int blinkage_steps = Convert.ToInt32(
+        Int32 blinkage_steps = Convert.ToInt32(
             Math.Ceiling(
-                (double)(1.0f / ModelControl.blinkage_speed) *
+                (Float64)(1.0f / ModelControl.blinkage_speed) *
                 Convert.ToDouble(application_fps)
             )
         );
@@ -1067,7 +1218,7 @@ public class ModelControl : MonoBehaviour {
     }
 
     // Update
-    float within_range(float current_value, float target_value, float value_range) {
+    Float32 within_range(Float32 current_value, Float32 target_value, Float32 value_range) {
         if (target_value > current_value) {
             current_value += value_range;
 
@@ -1145,15 +1296,15 @@ public class ModelControl : MonoBehaviour {
             Transform arm_upper_right_transform = arm_upper_right.transform;
             Transform arm_upper_left_transform = arm_upper_left.transform;
 
-            float right_arm_angle = this.right_arm_angle;
-            float left_arm_angle = this.left_arm_angle;
+            Float32 right_arm_angle = this.right_arm_angle;
+            Float32 left_arm_angle = this.left_arm_angle;
 
             arm_upper_right_transform.rotation = (
                 shoulder_right_transform.rotation * Quaternion.Euler(0.0f, 0.0f, right_arm_angle)
             );
 
             arm_upper_left_transform.rotation = (
-                shoulder_left_transform.rotation * Quaternion.Euler(0.0f, 0.0f, left_arm_angle)
+                shoulder_left_transform.rotation * Quaternion.Euler(0.0f, 0.0f, -left_arm_angle)
             );
 
             if (right_arm_angle < -70.0f) {
@@ -1164,9 +1315,9 @@ public class ModelControl : MonoBehaviour {
                 arm_lower_right.transform.rotation = arm_upper_right_transform.rotation;
             }
 
-            if (left_arm_angle > 70.0f) {
+            if (left_arm_angle < -70.0f) {
                 arm_lower_left.transform.rotation = (
-                    arm_upper_left_transform.rotation * Quaternion.Euler(0.0f, 0.0f, (left_arm_angle - 70.0f) * -0.5f)
+                    arm_upper_left_transform.rotation * Quaternion.Euler(0.0f, 0.0f, (left_arm_angle + 70.0f) * 0.5f)
                 );
             } else {
                 arm_lower_left.transform.rotation = arm_upper_left_transform.rotation;
@@ -1180,9 +1331,9 @@ public class ModelControl : MonoBehaviour {
             );
 
             arm_upper_left_transform.position = (
-                shoulder_left_transform.position +
+                shoulder_left_transform.position -
                 shoulder_left_transform.rotation * new Vector3(
-                    -this.shoulder_length * (1.0f + Math.Abs(left_arm_angle / 180f)), 0.0f, 0.0f
+                    this.shoulder_length * (1.0f + Math.Abs(left_arm_angle / 180f)), 0.0f, 0.0f
                 )
             );
         }
@@ -1199,19 +1350,19 @@ public class ModelControl : MonoBehaviour {
             Vector3 neck_difference = neck.transform.position - head.transform.position;
             Vector3 hips_position = body_root.transform.position + (hips.transform.rotation * this.hips_position);
 
-            float head_size = this.head_size;
+            Float32 head_size = this.head_size;
 
-            float position_x = this.default_position_horizontal;
+            Float32 position_x = this.default_position_horizontal;
             if (! this.lock_position_horizontal) {
                 position_x += this.face_position_y * head_size + neck_difference.x;
             }
 
-            float position_y = this.default_position_vertical;
+            Float32 position_y = this.default_position_vertical;
             if (! this.lock_position_vertical) {
                 position_y = this.face_position_x * head_size + neck_difference.y;
             }
 
-            float position_z = + this.default_position_deepness;
+            Float32 position_z = + this.default_position_deepness;
             if (! this.lock_position_deepness) {
                position_z += this.face_position_z * head_size + neck_difference.z;
             }
@@ -1225,17 +1376,27 @@ public class ModelControl : MonoBehaviour {
     }
 
 
-    void set_eye_expressions() {
-        float eye_openness_left = this.target_eye_openness_left;
-        float eye_openness_right = this.target_eye_openness_right;
+    void set_eye_expressions(HeadMovementData head_movement_target) {
+        Float32 eye_openness_left;
+        Float32 eye_openness_right;
+        
+        if (head_movement_target == null) {
+            eye_openness_left = 0f;
+            eye_openness_right = 0f;
+        } else {
+            eye_openness_left = head_movement_target.eye_openness_left;
+            eye_openness_right = head_movement_target.eye_openness_left;
+            
+        }
+        
         bool is_left_eye_closing = this.is_left_eye_closing;
         bool is_right_eye_closing = this.is_right_eye_closing;
-        int left_eye_close_step = this.left_eye_close_step;
-        int right_eye_close_step = this.right_eye_close_step;
+        Int32 left_eye_close_step = this.left_eye_close_step;
+        Int32 right_eye_close_step = this.right_eye_close_step;
         bool did_left_eye_close = this.did_left_eye_close;
         bool did_right_eye_close = this.did_right_eye_close;
-        float close_eye_at = this.close_eye_at;
-        float open_eye_at = this.open_eye_at;
+        Float32 close_eye_at = this.close_eye_at;
+        Float32 open_eye_at = this.open_eye_at;
 
         bool should_close_left;
         bool should_close_right;
@@ -1307,8 +1468,8 @@ public class ModelControl : MonoBehaviour {
             }
         }
 
-        this.expression_eye_close_left = left_eye_close_step * (70.0f / (float)this.blinkage_steps);
-        this.expression_eye_close_right = right_eye_close_step * (70.0f / (float)this.blinkage_steps);
+        this.expression_eye_close_left = left_eye_close_step * (70.0f / (Float32)this.blinkage_steps);
+        this.expression_eye_close_right = right_eye_close_step * (70.0f / (Float32)this.blinkage_steps);
 
         // Store state
         this.left_eye_close_step = left_eye_close_step;
@@ -1320,14 +1481,14 @@ public class ModelControl : MonoBehaviour {
 
 
     void set_mouth_expressions() {
-        float mouth_x = this.mouth_openness_x - this.default_mouth_openness_horizontal;
-        float mouth_y = this.mouth_openness_y - this.default_mouth_openness_vertical;
-        float smile_ratio = this.smile_ratio;
+        Float32 mouth_x = this.mouth_openness_x - this.default_mouth_openness_horizontal;
+        Float32 mouth_y = this.mouth_openness_y - this.default_mouth_openness_vertical;
+        Float32 smile_ratio = this.smile_ratio;
 
-        float expression_mouth_a = 0.0f;
-        float expression_mouth_i = 0.0f;
-        float expression_mouth_u = 0.0f;
-        float expression_mouth_o = 0.0f;
+        Float32 expression_mouth_a = 0.0f;
+        Float32 expression_mouth_i = 0.0f;
+        Float32 expression_mouth_u = 0.0f;
+        Float32 expression_mouth_o = 0.0f;
 
         if (mouth_y > 6.0f) {
             expression_mouth_a = (mouth_y - 6.0f) * 1.5f;
@@ -1360,7 +1521,7 @@ public class ModelControl : MonoBehaviour {
 
             /* When u value is too high the face might overflow at places, so we will reduce a and o values */
             if (expression_mouth_u > 50.0f) {
-                float openness_reduction = (expression_mouth_u - 50.0f) * 0.5f;
+                Float32 openness_reduction = (expression_mouth_u - 50.0f) * 0.5f;
 
                 expression_mouth_a -= openness_reduction;
                 if (expression_mouth_a < 0.0f) {
@@ -1394,13 +1555,13 @@ public class ModelControl : MonoBehaviour {
     }
 
     void update_happiness() {
-        float happiness = this.happiness;
+        Float32 happiness = this.happiness;
 
         // Cap on eye fun with blinkage
-        float expression_eye_close_left = this.expression_eye_close_left;
-        float expression_eye_close_right = this.expression_eye_close_right;
+        Float32 expression_eye_close_left = this.expression_eye_close_left;
+        Float32 expression_eye_close_right = this.expression_eye_close_right;
 
-        float expression_eye_fun;
+        Float32 expression_eye_fun;
 
         if (expression_eye_close_left > expression_eye_close_right) {
             expression_eye_fun = expression_eye_close_left;
@@ -1411,7 +1572,7 @@ public class ModelControl : MonoBehaviour {
         expression_eye_fun = Math.Max(happiness * 0.7f, expression_eye_fun);
 
         if (happiness > 0.0f) {
-            float eye_joy_scale;
+            Float32 eye_joy_scale;
             if (happiness >= 80.0f) {
                 eye_joy_scale = 1.0f;
             } else {
@@ -1421,28 +1582,28 @@ public class ModelControl : MonoBehaviour {
             this.expression_eye_close_left = expression_eye_close_left * (1.0f - eye_joy_scale);
             this.expression_eye_close_right = expression_eye_close_right * (1.0f - eye_joy_scale);
 
-            this.expression_eye_joy_right = UTILS.merge_values(
+            this.expression_eye_joy_right = utils.merge_values(
                 this.expression_eye_joy_right,
                 eye_joy_scale * expression_eye_close_left * (50f / 70f)
             );
-            this.expression_eye_joy_left = UTILS.merge_values(
+            this.expression_eye_joy_left = utils.merge_values(
                 expression_eye_joy_left,
                 eye_joy_scale * expression_eye_close_right * (50f / 70f)
             );
         }
 
-        this.expression_eye_fun = UTILS.merge_values(this.expression_eye_fun, expression_eye_fun);
+        this.expression_eye_fun = utils.merge_values(this.expression_eye_fun, expression_eye_fun);
 
         // Eyebrows
-        this.expression_eyebrow_fun = UTILS.merge_values(this.expression_eyebrow_fun, happiness);
+        this.expression_eyebrow_fun = utils.merge_values(this.expression_eyebrow_fun, happiness);
 
         // Mouth
-        float expression_mouth_a = this.expression_mouth_a;
-        float expression_mouth_o = this.expression_mouth_o;
-        float expression_mouth_i = this.expression_mouth_i;
+        Float32 expression_mouth_a = this.expression_mouth_a;
+        Float32 expression_mouth_o = this.expression_mouth_o;
+        Float32 expression_mouth_i = this.expression_mouth_i;
 
-        float mouth_openness = (expression_mouth_a + expression_mouth_o) / 2.0f;
-        float joy = Math.Min(mouth_openness, happiness * 3.0f);
+        Float32 mouth_openness = (expression_mouth_a + expression_mouth_o) / 2.0f;
+        Float32 joy = Math.Min(mouth_openness, happiness * 3.0f);
 
         expression_mouth_o -= (joy * 2.0f);
         if (expression_mouth_o < 0.0f) {
@@ -1458,25 +1619,25 @@ public class ModelControl : MonoBehaviour {
         this.expression_mouth_a = expression_mouth_a;
         this.expression_mouth_o = expression_mouth_o;
         this.expression_mouth_i = expression_mouth_i;
-        this.expression_mouth_joy = UTILS.merge_values(this.expression_mouth_joy, joy);
+        this.expression_mouth_joy = utils.merge_values(this.expression_mouth_joy, joy);
     }
 
     void update_surprised() {
-        float surprise = this.surprise;
+        Float32 surprise = this.surprise;
         // Update eyebrow even if we don not do `o` face
-        this.expression_eyebrow_surprised = UTILS.merge_values(this.expression_eyebrow_surprised, surprise * 0.5f);
+        this.expression_eyebrow_surprised = utils.merge_values(this.expression_eyebrow_surprised, surprise * 0.5f);
         if (surprise > 50.0f) {
-            this.expression_eye_surprised = UTILS.merge_values(this.expression_eye_surprised, (surprise -50.0f) * 2.0f);
+            this.expression_eye_surprised = utils.merge_values(this.expression_eye_surprised, (surprise -50.0f) * 2.0f);
         }
 
-        float expression_mouth_u = this.expression_mouth_u;
+        Float32 expression_mouth_u = this.expression_mouth_u;
         if (expression_mouth_u >= 0.0f) {
             surprise = Math.Min(surprise, expression_mouth_u * 2.0f);
 
             // Mouth - Convert excess a to expression_mouth_surprised
-            float expression_mouth_a = this.expression_mouth_a;
-            float expression_mouth_o = this.expression_mouth_o;
-            float expression_mouth_surprised;
+            Float32 expression_mouth_a = this.expression_mouth_a;
+            Float32 expression_mouth_o = this.expression_mouth_o;
+            Float32 expression_mouth_surprised;
 
             // reduce a face
             expression_mouth_surprised = Math.Min(surprise, expression_mouth_a);
@@ -1489,7 +1650,7 @@ public class ModelControl : MonoBehaviour {
                 expression_mouth_o = 0.0f;
             }
 
-            this.expression_mouth_surprised = UTILS.merge_values(
+            this.expression_mouth_surprised = utils.merge_values(
                 this.expression_mouth_surprised,
                 expression_mouth_surprised
             );
@@ -1499,30 +1660,30 @@ public class ModelControl : MonoBehaviour {
     }
 
     void update_anger() {
-        float anger = this.anger;
+        Float32 anger = this.anger;
 
         if (anger < 0.0f) {
             return;
         }
         
-        float eye_max_close = Math.Max(this.expression_eye_close_left, this.expression_eye_close_right);
+        Float32 eye_max_close = Math.Max(this.expression_eye_close_left, this.expression_eye_close_right);
         if (eye_max_close == 0.0f) {
-            this.expression_eye_angry = UTILS.merge_values(this.expression_eye_angry, anger);
+            this.expression_eye_angry = utils.merge_values(this.expression_eye_angry, anger);
         } else if (eye_max_close < 70.0f) {
-            this.expression_eye_angry = UTILS.merge_values(
+            this.expression_eye_angry = utils.merge_values(
                 this.expression_eye_angry,
                 anger * (1.0f - (eye_max_close / 70.0f))
             );
         }
 
         anger = anger * 0.5f;
-        this.expression_eyebrow_angry = UTILS.merge_values(this.expression_eyebrow_angry, anger);
-        this.expression_mouth_angry = UTILS.merge_values(this.expression_mouth_angry, anger);
+        this.expression_eyebrow_angry = utils.merge_values(this.expression_eyebrow_angry, anger);
+        this.expression_mouth_angry = utils.merge_values(this.expression_mouth_angry, anger);
     }
 
 
     void update_sadness() {
-        float sadness = this.sadness;
+        Float32 sadness = this.sadness;
 
         if (sadness <= 0.0f) {
             return;
@@ -1530,64 +1691,64 @@ public class ModelControl : MonoBehaviour {
 
         sadness = sadness * 0.5f;
 
-        this.expression_eyebrow_angry = UTILS.merge_values(
+        this.expression_eyebrow_angry = utils.merge_values(
             this.expression_eyebrow_angry, sadness
         );
-        this.expression_eyebrow_fun = UTILS.merge_values(
+        this.expression_eyebrow_fun = utils.merge_values(
             this.expression_eyebrow_fun, sadness
         );
-        this.expression_eyebrow_joy = UTILS.merge_values(
+        this.expression_eyebrow_joy = utils.merge_values(
             this.expression_eyebrow_joy, sadness
         );
-        this.expression_eyebrow_sorrow = UTILS.merge_values(
+        this.expression_eyebrow_sorrow = utils.merge_values(
             this.expression_eyebrow_sorrow, sadness
         );
-        this.expression_eye_spread = UTILS.merge_values(
+        this.expression_eye_spread = utils.merge_values(
             this.expression_eye_spread, sadness
         );
 
-        this.expression_eye_sorrow = UTILS.merge_values(
+        this.expression_eye_sorrow = utils.merge_values(
             this.expression_eye_sorrow, sadness
         );
-        this.expression_mouth_angry = UTILS.merge_values(
+        this.expression_mouth_angry = utils.merge_values(
             this.expression_mouth_angry, sadness
         );
-        this.expression_mouth_neutral = UTILS.merge_values(
+        this.expression_mouth_neutral = utils.merge_values(
             this.expression_mouth_neutral, sadness
         );
     }
 
 
     void update_fear() {
-        float fear = this.fear;
+        Float32 fear = this.fear;
 
         if (fear <= 0.0) {
             return;
         }
 
-        this.expression_eyebrow_sorrow = UTILS.merge_values(
+        this.expression_eyebrow_sorrow = utils.merge_values(
             this.expression_eyebrow_sorrow, fear * 0.5f
         );
-        this.expression_eyebrow_surprised = UTILS.merge_values(
+        this.expression_eyebrow_surprised = utils.merge_values(
             this.expression_eyebrow_surprised, fear * 0.5f
         );
 
-        this.expression_eye_surprised = UTILS.merge_values(
+        this.expression_eye_surprised = utils.merge_values(
             this.expression_eye_surprised, fear
         );
-        this.expression_eye_spread = UTILS.merge_values(
+        this.expression_eye_spread = utils.merge_values(
             this.expression_eye_spread, fear * -0.5f
         );
-        this.expression_eye_highlight_hide = UTILS.merge_values(
+        this.expression_eye_highlight_hide = utils.merge_values(
             this.expression_eye_highlight_hide, fear
         );
 
-        float mouth_openness = (float)Math.Sqrt((double)(
-            UTILS.square(this.expression_mouth_a) +
-            UTILS.square(this.expression_mouth_u) +
-            UTILS.square(this.expression_mouth_o) +
-            UTILS.square(this.expression_mouth_joy) +
-            UTILS.square(this.expression_mouth_surprised)
+        Float32 mouth_openness = (Float32)Math.Sqrt((Float64)(
+            utils.square(this.expression_mouth_a) +
+            utils.square(this.expression_mouth_u) +
+            utils.square(this.expression_mouth_o) +
+            utils.square(this.expression_mouth_joy) +
+            utils.square(this.expression_mouth_surprised)
         )) / 2.0f;
 
         if (mouth_openness < 0.0f) {
@@ -1602,7 +1763,7 @@ public class ModelControl : MonoBehaviour {
             fear = 75.0f;
         }
 
-        float mouth_openness_reduction = 1.0f - fear / 300.0f;
+        Float32 mouth_openness_reduction = 1.0f - fear / 300.0f;
 
         this.expression_mouth_a *= mouth_openness_reduction;
         this.expression_mouth_u *= mouth_openness_reduction;
@@ -1611,41 +1772,41 @@ public class ModelControl : MonoBehaviour {
         this.expression_mouth_surprised *= mouth_openness_reduction;
 
 
-        this.expression_eye_sorrow = UTILS.merge_values(
+        this.expression_eye_sorrow = utils.merge_values(
             this.expression_eye_sorrow, fear
         );
-        this.expression_mouth_surprised = UTILS.merge_values(
+        this.expression_mouth_surprised = utils.merge_values(
             this.expression_mouth_surprised, fear / 3.0f
         );
     }
 
     void update_disgust() {
-        float disgust = this.disgust;
+        Float32 disgust = this.disgust;
         if (disgust <= 0.0f) {
             return;
         }
 
-        this.expression_eyebrow_joy = UTILS.merge_values(
+        this.expression_eyebrow_joy = utils.merge_values(
             this.expression_eyebrow_joy, disgust * 0.5f
         );
-        this.expression_eyebrow_sorrow = UTILS.merge_values(
+        this.expression_eyebrow_sorrow = utils.merge_values(
             this.expression_eyebrow_sorrow, disgust * 0.5f
         );
 
-        this.expression_eye_sorrow = UTILS.merge_values(
+        this.expression_eye_sorrow = utils.merge_values(
             this.expression_eye_sorrow, disgust * 0.5f
         );
 
-        this.expression_mouth_angry = UTILS.merge_values(
+        this.expression_mouth_angry = utils.merge_values(
             this.expression_mouth_angry, disgust * 0.25f
         );
 
-        float mouth_openness = (float)Math.Sqrt((double)(
-            UTILS.square(this.expression_mouth_a) +
-            UTILS.square(this.expression_mouth_u) +
-            UTILS.square(this.expression_mouth_o) +
-            UTILS.square(this.expression_mouth_joy) +
-            UTILS.square(this.expression_mouth_surprised)
+        Float32 mouth_openness = (Float32)Math.Sqrt((Float64)(
+            utils.square(this.expression_mouth_a) +
+            utils.square(this.expression_mouth_u) +
+            utils.square(this.expression_mouth_o) +
+            utils.square(this.expression_mouth_joy) +
+            utils.square(this.expression_mouth_surprised)
         )) / 2.0f;
 
         if (mouth_openness < 0.0f) {
@@ -1660,7 +1821,7 @@ public class ModelControl : MonoBehaviour {
             disgust = 75.0f;
         }
 
-        float mouth_openness_reduction = 1.0f - disgust / 300.0f;
+        Float32 mouth_openness_reduction = 1.0f - disgust / 300.0f;
 
         this.expression_mouth_a *= mouth_openness_reduction;
         this.expression_mouth_u *= mouth_openness_reduction;
@@ -1668,16 +1829,16 @@ public class ModelControl : MonoBehaviour {
         this.expression_mouth_joy *= mouth_openness_reduction;
         this.expression_mouth_surprised *= mouth_openness_reduction;
 
-        this.expression_mouth_up = UTILS.merge_values(
+        this.expression_mouth_up = utils.merge_values(
             this.expression_mouth_up, disgust * (1.0f / 3.0f)
         );
-        this.expression_mouth_sorrow = UTILS.merge_values(
+        this.expression_mouth_sorrow = utils.merge_values(
             this.expression_mouth_sorrow, disgust * (2.0f / 3.0f)
         );
-        this.expression_mouth_a = UTILS.merge_values(
+        this.expression_mouth_a = utils.merge_values(
             this.expression_mouth_a, disgust * (1.0f / 3.0f)
         );
-        this.expression_teeth_short_top = UTILS.merge_values(
+        this.expression_teeth_short_top = utils.merge_values(
             this.expression_teeth_short_top, disgust * (-2.0f / 3.0f)
         );
     }
@@ -1711,45 +1872,45 @@ public class ModelControl : MonoBehaviour {
     void update_face() {
         SkinnedMeshRenderer face_mesh = this.face_mesh;
         if (face_mesh != null) {
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_CLOSE_LEFT, this.expression_eye_close_left);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_CLOSE_RIGHT, this.expression_eye_close_right);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_FUN, this.expression_eye_fun);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_SURPRISED, this.expression_eye_surprised);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_JOY_LEFT, this.expression_eye_joy_left);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_JOY_RIGHT, this.expression_eye_joy_right);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_ANGRY, this.expression_eye_angry);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_SPREAD, this.expression_eye_spread);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_SORROW, this.expression_eye_sorrow);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYE_HIGHLIGHT_HIDE, this.expression_eye_highlight_hide);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_CLOSE_LEFT, this.expression_eye_close_left);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_CLOSE_RIGHT, this.expression_eye_close_right);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_FUN, this.expression_eye_fun);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_SURPRISED, this.expression_eye_surprised);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_JOY_LEFT, this.expression_eye_joy_left);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_JOY_RIGHT, this.expression_eye_joy_right);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_ANGRY, this.expression_eye_angry);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_SPREAD, this.expression_eye_spread);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_SORROW, this.expression_eye_sorrow);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_HIGHLIGHT_HIDE, this.expression_eye_highlight_hide);
 
 
 
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYEBROW_FUN, this.expression_eyebrow_fun);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYEBROW_FUN, this.expression_eyebrow_fun);
             // At high values might cause eyebrow to go under the skin partially
             face_mesh.SetBlendShapeWeight(
-                (int)FACE_MESH.EYEBROW_SURPRISED, Math.Min(this.expression_eyebrow_surprised, 140.0f)
+                (Int32)FACE_MESH.EYEBROW_SURPRISED, Math.Min(this.expression_eyebrow_surprised, 140.0f)
             );
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYEBROW_ANGRY, this.expression_eyebrow_angry);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYEBROW_JOY, this.expression_eyebrow_joy);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.EYEBROW_SORROW, this.expression_eyebrow_sorrow);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYEBROW_ANGRY, this.expression_eyebrow_angry);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYEBROW_JOY, this.expression_eyebrow_joy);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYEBROW_SORROW, this.expression_eyebrow_sorrow);
 
 
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_A, this.expression_mouth_a);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_I, this.expression_mouth_i);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_U, this.expression_mouth_u);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_O, this.expression_mouth_o);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_O, this.expression_mouth_o);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_FUN, this.expression_mouth_fun);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_JOY, this.expression_mouth_joy);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_SURPRISED, this.expression_mouth_surprised);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_ANGRY, this.expression_mouth_angry);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_NEUTRAL, this.expression_mouth_neutral);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_UP, this.expression_mouth_up);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.MOUTH_SORROW, this.expression_mouth_sorrow);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_A, this.expression_mouth_a);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_I, this.expression_mouth_i);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_U, this.expression_mouth_u);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_O, this.expression_mouth_o);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_O, this.expression_mouth_o);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_FUN, this.expression_mouth_fun);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_JOY, this.expression_mouth_joy);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_SURPRISED, this.expression_mouth_surprised);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_ANGRY, this.expression_mouth_angry);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_NEUTRAL, this.expression_mouth_neutral);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_UP, this.expression_mouth_up);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_SORROW, this.expression_mouth_sorrow);
 
 
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.TEETH_SHORT_BOT, this.expression_teeth_short_bot);
-            face_mesh.SetBlendShapeWeight((int)FACE_MESH.TEETH_SHORT_TOP, this.expression_teeth_short_top);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.TEETH_SHORT_BOT, this.expression_teeth_short_bot);
+            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.TEETH_SHORT_TOP, this.expression_teeth_short_top);
         }
     }
 
@@ -1758,8 +1919,14 @@ public class ModelControl : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        this.do_movement_smooth_step();
-        this.do_expression_smooth_step();
+        // Pull them at the start in case of race condition happens.
+        HeadMovementData head_movement_target = this.head_movement_target;
+        ExpressionData expression_target = this.expression_target;
+        BodyMovementData body_movement_target = this.body_movement_target;
+    
+        this.do_head_movement_smooth_step(head_movement_target);
+        this.do_expression_smooth_step(expression_target);
+        this.do_body_movement_smooth_step(body_movement_target);
 
         this.clear_expressions();
         this.update_head();
@@ -1767,7 +1934,7 @@ public class ModelControl : MonoBehaviour {
         this.update_arms();
 
         // Face
-        this.set_eye_expressions();
+        this.set_eye_expressions(head_movement_target);
         this.set_mouth_expressions();
         this.set_eyebrow_expressions();
 
