@@ -31,7 +31,14 @@ PACKAGE = __import__(PACKAGE_NAME)
 
 
 def __main__():
-    PACKAGE.run()
+    """
+    Calls the connect - detect - send loop.
+    """
+    try:
+        PACKAGE.run()
+    except KeyboardInterrupt as err:
+        raise SystemExit from err
+
 
 if __name__ == '__main__':
     __main__()

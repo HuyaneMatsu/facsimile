@@ -2,7 +2,7 @@ __all__ = ()
 
 from os.path import dirname as get_directory_name, join as join_paths
 
-from ... import __file__ as PACKAGE_ROOT_FILE
+from .... import __file__ as PACKAGE_ROOT_FILE
 
 
 MARGIN = 1.2

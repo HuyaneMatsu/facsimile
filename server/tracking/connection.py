@@ -8,6 +8,13 @@ from .helpers import format_address, log
 
 
 def try_connect_socket():
+    """
+    Tries to connect with socket.
+    
+    Returns
+    -------
+    socket : `socket.socket`
+    """
     log(f'CONNECTION | Trying to connect to: {format_address(ADDRESS)}')
     
     socket = Socket(SOCKET_FAMILY__AF_INET, SOCKET_TYPE__STREAM)

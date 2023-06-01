@@ -1,8 +1,8 @@
 __all__ = ()
 
-from .constants import EYE_RATIO_X_SHIFT_SCALING
+from ....helpers import Vector3, get_point_difference_3d
 
-from ..helpers import Vector3, get_point_difference_3d
+from .constants import EYE_RATIO_X_SHIFT_SCALING
 
 
 def scale_iris_rotations(x_ratio, y_ratio):

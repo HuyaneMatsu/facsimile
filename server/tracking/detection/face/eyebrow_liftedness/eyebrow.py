@@ -1,30 +1,30 @@
 __all__ = ('get_eyebrow_liftedness', )
 
-from ..face_mesh_points import (
-    FACE_MESH_POINT__EYEBROW_RIGHT__TOP, FACE_MESH_POINT__FOREHEAD__LEFT_1,
-    FACE_MESH_POINT__EYEBROW_RIGHT__BOT, FACE_MESH_POINT__FOREHEAD__RIGHT_1,
-    FACE_MESH_POINT__EYEBROW_LEFT__BOT, FACE_MESH_POINT__EYE_OUTLINE_RIGHT__INNER,
-    FACE_MESH_POINT__EYEBROW_LEFT__TOP, FACE_MESH_POINT__EYE_OUTLINE_LEFT__INNER
-
+from ....helpers import get_point_average_3d, get_point_difference_3d
+from ....points.face import (
+    POINT_FACE__EYEBROW_RIGHT__TOP, POINT_FACE__FOREHEAD__LEFT_1,
+    POINT_FACE__EYEBROW_RIGHT__BOT, POINT_FACE__FOREHEAD__RIGHT_1,
+    POINT_FACE__EYEBROW_LEFT__BOT, POINT_FACE__EYE_OUTLINE_RIGHT__INNER,
+    POINT_FACE__EYEBROW_LEFT__TOP, POINT_FACE__EYE_OUTLINE_LEFT__INNER
 )
-from ..helpers import get_point_average_3d, get_point_difference_3d
 
 from .constants import (
     EYEBROW_LIFTEDNESS_REDUCTION, EYEBROW_LIFTEDNESS_MULTIPLIER, EYEBROW_LIFTEDNESS_MIN, EYEBROW_LIFTEDNESS_MAX
 )
 
+
 def get_eyebrow_liftedness(landmarks):
     eyebrow_liftedness_left = get_side_eyebrow_lift_ratio(
-        landmarks[FACE_MESH_POINT__EYE_OUTLINE_LEFT__INNER],
-        landmarks[FACE_MESH_POINT__EYEBROW_LEFT__TOP],
-        landmarks[FACE_MESH_POINT__EYEBROW_LEFT__BOT],
-        landmarks[FACE_MESH_POINT__FOREHEAD__LEFT_1],
+        landmarks[POINT_FACE__EYE_OUTLINE_LEFT__INNER],
+        landmarks[POINT_FACE__EYEBROW_LEFT__TOP],
+        landmarks[POINT_FACE__EYEBROW_LEFT__BOT],
+        landmarks[POINT_FACE__FOREHEAD__LEFT_1],
     )
     eyebrow_liftedness_right = get_side_eyebrow_lift_ratio(
-        landmarks[FACE_MESH_POINT__EYE_OUTLINE_RIGHT__INNER],
-        landmarks[FACE_MESH_POINT__EYEBROW_RIGHT__TOP],
-        landmarks[FACE_MESH_POINT__EYEBROW_RIGHT__BOT],
-        landmarks[FACE_MESH_POINT__FOREHEAD__RIGHT_1],
+        landmarks[POINT_FACE__EYE_OUTLINE_RIGHT__INNER],
+        landmarks[POINT_FACE__EYEBROW_RIGHT__TOP],
+        landmarks[POINT_FACE__EYEBROW_RIGHT__BOT],
+        landmarks[POINT_FACE__FOREHEAD__RIGHT_1],
     )
     
     if (eyebrow_liftedness_left > eyebrow_liftedness_right):

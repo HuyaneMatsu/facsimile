@@ -2,8 +2,8 @@ __all__ = ('get_face_position',)
 
 from math import atan2, tau
 
-from ..face_mesh_points import FACE_MESH_POINT__FACE_LEFT_MOST, FACE_MESH_POINT__FACE_RIGHT_MOST
-from ..helpers import get_point_difference_3d, get_point_average_2d
+from ....helpers import get_point_difference_3d, get_point_average_2d
+from ....points.face import POINT_FACE__FACE_LEFT_MOST, POINT_FACE__FACE_RIGHT_MOST
 
 from .constants import (
     FACE_POSITION__X__MIN, FACE_POSITION__X__MAX, FACE_POSITION__Y__MIN, FACE_POSITION__Y__MAX, FACE_POSITION__Z__MIN,
@@ -12,8 +12,8 @@ from .constants import (
 
 
 def get_face_position(landmarks):
-    left = landmarks[FACE_MESH_POINT__FACE_LEFT_MOST]
-    right = landmarks[FACE_MESH_POINT__FACE_RIGHT_MOST]
+    left = landmarks[POINT_FACE__FACE_LEFT_MOST]
+    right = landmarks[POINT_FACE__FACE_RIGHT_MOST]
     
     face_width = get_point_difference_3d(left, right)
     # As the head rotates some why it's size increases, so we will reduce it

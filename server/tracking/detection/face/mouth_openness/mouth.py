@@ -1,35 +1,35 @@
 __all__ = ('get_mouth_openness',)
 
-from ..face_mesh_points import (
-    FACE_MESH_POINT__LIPS_BOT, FACE_MESH_POINT__LIPS_LEFT, FACE_MESH_POINT__LIPS_TOP, FACE_MESH_POINT__LIPS_RIGHT,
-    FACE_MESH_POINT__FACE_LEFT_MOST, FACE_MESH_POINT__FACE_RIGHT_MOST, FACE_MESH_POINT__MOUTH_TOP,
-    FACE_MESH_POINT__MOUTH_BOT
+from ....helpers import get_point_difference_3d
+from ....points.face import (
+    POINT_FACE__LIPS_BOT, POINT_FACE__LIPS_LEFT, POINT_FACE__LIPS_TOP, POINT_FACE__LIPS_RIGHT,
+    POINT_FACE__FACE_LEFT_MOST, POINT_FACE__FACE_RIGHT_MOST, POINT_FACE__MOUTH_TOP,
+    POINT_FACE__MOUTH_BOT
 )
-from ..helpers import get_point_difference_3d
 
 from .constants import MOUTH_OPENNESS_MULTIPLIER_X, MOUTH_OPENNESS_MULTIPLIER_Y, MOUTH_OPENNESS_MAX
 
 
 def get_mouth_openness(landmarks):
     most_difference = get_point_difference_3d(
-        landmarks[FACE_MESH_POINT__FACE_LEFT_MOST],
-        landmarks[FACE_MESH_POINT__FACE_RIGHT_MOST],
+        landmarks[POINT_FACE__FACE_LEFT_MOST],
+        landmarks[POINT_FACE__FACE_RIGHT_MOST],
     )
     
     mouth_difference_x = get_point_difference_3d(
-        landmarks[FACE_MESH_POINT__LIPS_LEFT],
-        landmarks[FACE_MESH_POINT__LIPS_RIGHT],
+        landmarks[POINT_FACE__LIPS_LEFT],
+        landmarks[POINT_FACE__LIPS_RIGHT],
     )
     
     mouth_difference_y = 0.5 * (
         get_point_difference_3d(
-            landmarks[FACE_MESH_POINT__LIPS_TOP],
-            landmarks[FACE_MESH_POINT__LIPS_BOT],
+            landmarks[POINT_FACE__LIPS_TOP],
+            landmarks[POINT_FACE__LIPS_BOT],
         )
         +
         get_point_difference_3d(
-            landmarks[FACE_MESH_POINT__MOUTH_TOP],
-            landmarks[FACE_MESH_POINT__MOUTH_BOT],
+            landmarks[POINT_FACE__MOUTH_TOP],
+            landmarks[POINT_FACE__MOUTH_BOT],
         )
     )
     

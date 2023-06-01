@@ -1,34 +1,34 @@
 __all__ = ('get_smile_ratio',)
 
-from ..face_mesh_points import (
-    FACE_MESH_POINT__CHEEKS_SMILE_LEFT__TOP_3, FACE_MESH_POINT__CHEEKS_SMILE_RIGHT__TOP_3,
-    FACE_MESH_POINT__FACE_LEFT_MOST, FACE_MESH_POINT__FACE_RIGHT_MOST, FACE_MESH_POINT__MOUTH_LEFT_MOST,
-    FACE_MESH_POINT__MOUTH_RIGHT_MOST, FACE_MESH_POINT__CHEEKS_SMILE_RIGHT__MID_3,
-    FACE_MESH_POINT__CHEEKS_SMILE_LEFT__MID_3
+from ....helpers import get_point_difference_3d
+from ....points.face import (
+    POINT_FACE__CHEEKS_SMILE_LEFT__TOP_3, POINT_FACE__CHEEKS_SMILE_RIGHT__TOP_3,
+    POINT_FACE__FACE_LEFT_MOST, POINT_FACE__FACE_RIGHT_MOST, POINT_FACE__MOUTH_LEFT_MOST,
+    POINT_FACE__MOUTH_RIGHT_MOST, POINT_FACE__CHEEKS_SMILE_RIGHT__MID_3,
+    POINT_FACE__CHEEKS_SMILE_LEFT__MID_3
 )
-from ..helpers import get_point_difference_3d
 
 from .constants import SMILE_REDUCTION, SMILE_MAX, SMILE_MIN, SMILE_MULTIPLIER
 
 
 def get_smile_ratio(landmarks):
     head_width = get_point_difference_3d(
-        landmarks[FACE_MESH_POINT__FACE_LEFT_MOST],
-        landmarks[FACE_MESH_POINT__FACE_RIGHT_MOST],
+        landmarks[POINT_FACE__FACE_LEFT_MOST],
+        landmarks[POINT_FACE__FACE_RIGHT_MOST],
     )
     
     left_smile_ratio = get_side_smile_ratio(
-        landmarks[FACE_MESH_POINT__MOUTH_LEFT_MOST],
-        landmarks[FACE_MESH_POINT__CHEEKS_SMILE_LEFT__TOP_3],
-        landmarks[FACE_MESH_POINT__CHEEKS_SMILE_LEFT__MID_3],
+        landmarks[POINT_FACE__MOUTH_LEFT_MOST],
+        landmarks[POINT_FACE__CHEEKS_SMILE_LEFT__TOP_3],
+        landmarks[POINT_FACE__CHEEKS_SMILE_LEFT__MID_3],
         head_width,
     )
     
     
     right_smile_ratio = get_side_smile_ratio(
-        landmarks[FACE_MESH_POINT__MOUTH_RIGHT_MOST],
-        landmarks[FACE_MESH_POINT__CHEEKS_SMILE_RIGHT__TOP_3],
-        landmarks[FACE_MESH_POINT__CHEEKS_SMILE_RIGHT__MID_3],
+        landmarks[POINT_FACE__MOUTH_RIGHT_MOST],
+        landmarks[POINT_FACE__CHEEKS_SMILE_RIGHT__TOP_3],
+        landmarks[POINT_FACE__CHEEKS_SMILE_RIGHT__MID_3],
         head_width,
     )
     

@@ -2,24 +2,23 @@ __all__ = ('detect_expressions',)
 
 from math import floor, ceil
 
-from ..face_mesh_points import FACE_MESH_POINT__CHIN, FACE_MESH_POINT__FOREHEAD
+from cv2 import resize
+from numpy import float32 as f32, array as Array, moveaxis as move_axis
 
-from ..helpers import get_point_average_2d, get_point_difference_2d, suppress_stdout_and_stderr
+from ...helpers import get_point_average_2d, get_point_difference_2d, suppress_stdout_and_stderr
+from ...points.face import POINT_FACE__CHIN, POINT_FACE__FOREHEAD
 
 from .constants import MARGIN, MODEL_PATH
 from .helpers import normalize_expressions
 
-from cv2 import resize
-from numpy import float32 as f32, array as Array, moveaxis as move_axis
 
-
-NORMALIZER_MEAN = Array([0.57535914, 0.44928582, 0.40079932], dtype=f32) * f32(255)
-NORMALIZER_STANDARD = Array([0.20735591, 0.18981615, 0.18132027], dtype=f32) * f32(255)
+NORMALIZER_MEAN = Array([0.57535914, 0.44928582, 0.40079932], dtype = f32) * f32(255)
+NORMALIZER_STANDARD = Array([0.20735591, 0.18981615, 0.18132027], dtype = f32) * f32(255)
 
 
 with suppress_stdout_and_stderr(True):
     import tensorflow
-    INTERPRETER = tensorflow.lite.Interpreter(model_path=MODEL_PATH)
+    INTERPRETER = tensorflow.lite.Interpreter(model_path = MODEL_PATH)
     INTERPRETER.allocate_tensors()
 
 
@@ -28,8 +27,27 @@ OUTPUT_TENSOR = INTERPRETER.get_output_details()[0]['index']
 
 
 def detect_expressions(landmarks, image):
-    top_point = landmarks[FACE_MESH_POINT__FOREHEAD]
-    bot_point = landmarks[FACE_MESH_POINT__CHIN]
+    """
+    Detects expressions from the given image.
+    
+    Parameters
+    ----------
+    landmarks : `google.protobuf.pyext._message.RepeatedCompositeContainer`
+        The read landmarks.
+    image : `numpy.ndarray`
+        The read image.
+    
+    Returns
+    -------
+    happiness : `float`
+    sadness : `float`
+    surprise : `float`
+    fear : `float`
+    disgust : `float`
+    anger : `float`
+    """
+    top_point = landmarks[POINT_FACE__FOREHEAD]
+    bot_point = landmarks[POINT_FACE__CHIN]
     
     image_scale_y, image_scale_x, _ = image.shape
     

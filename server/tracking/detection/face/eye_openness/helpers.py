@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ..helpers import get_point_difference_3d
+from ....helpers import get_point_difference_3d
 
 from .constants import EYE_OPENNESS_MULTIPLIER, EYE_OPENNESS_MAX, EYE_OPENNESS_MIN, EYE_OPENNESS_REDUCTION
 
