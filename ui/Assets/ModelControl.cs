@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Diagnostics;
 
+using Debug = UnityEngine.Debug;
 using Float32 = System.Single;
 using Float64 = System.Double;
 using Int32 = System.Int32;
@@ -272,6 +273,19 @@ public static class utils {
         
         return new_array;
     }
+    
+    public static Float32 limit_target(Float32 root_position, Float32 new_position, Float32 max_change) {
+        Float32 change = new_position - root_position;
+        if (Math.Abs(change) > max_change) {
+            if (new_position > root_position) {
+                new_position = root_position + max_change;
+            } else {
+                new_position = root_position - max_change;
+            }
+        }
+        
+        return new_position;
+    }
 }
 
 
@@ -391,19 +405,23 @@ public class ModelControl : MonoBehaviour {
 
     [Header("Position")]
     [SerializeField]
+    public bool auto_set_position_adjustment = true;
+    private bool should_auto_set_position_adjustment = false;
     [Range(-10.0f, 10.0f)]
-    public Float32 default_position_deepness = 0.0f;
+    public Float32 position_adjustment_deepness = 0.0f;
     [Range(-10.0f, 10.0f)]
-    public Float32 default_position_horizontal = 0.0f;
+    public Float32 position_adjustment_horizontal = 0.0f;
     [Range(-10.0f, 10.0f)]
-    public Float32 default_position_vertical = 0.0f;
+    public Float32 position_adjustment_vertical = 0.0f;
+    [SerializeField]
+    [Range(0.0f, 10.0f)]
+    public Float32 max_position_change = 0.01f;
     [SerializeField]
     public bool lock_position_deepness = true;
     [SerializeField]
     public bool lock_position_horizontal = true;
     [SerializeField]
     public bool lock_position_vertical = true;
-
 
     [Header("Smoothing")]
     [SerializeField]
@@ -419,7 +437,10 @@ public class ModelControl : MonoBehaviour {
 
     private const Float32 blinkage_speed = 12.0f;
     private Int32 blinkage_steps = 8;
-
+    
+    [Header("Adjustment")]
+    public bool readjust = false;
+    
     [Header("Hair")]
     [SerializeField]
     [Range(0.0f, 4.0f)]
@@ -442,9 +463,16 @@ public class ModelControl : MonoBehaviour {
     [SerializeField]
     [Range(0.0f, 1.0f)]
     public Float32 chest_drag = 0.2f;
+    
+    [Header("Input")]
+    [SerializeField]
+    public bool lock_head_movements = false;
+    [SerializeField]
+    public bool lock_expressions = false;
+    [SerializeField]
+    public bool lock_body_movements = false;
 
-
-    [Header("Movements")]
+    [Header("Head Movements")]
     [Range(-16.0f, +8.0f)]
     public Float32 iris_left_x = 0.0f;
     [Range(-10.0f, +10.0f)]
@@ -522,6 +550,7 @@ public class ModelControl : MonoBehaviour {
     private GameObject arm_lower_right = null;
     private GameObject arm_lower_left = null;
     private Float32 shoulder_length = 0.0f;
+    public Float32 root_to_head = 1.6f;
     private GameObject body_root = null;
     private GameObject hips = null;
 
@@ -549,7 +578,7 @@ public class ModelControl : MonoBehaviour {
 
     /* This will be changed at startup, no worries */
     private Float32 head_size = 1.0f;
-    private Vector3 hips_position = new Vector3(0.0f, 0.0f, 0.0f);
+    private Vector3 root_position = new Vector3(0.0f, 0.0f, 0.0f);
 
     // Expressions
     private Float32 expression_eye_close_left = 0.0f;
@@ -690,22 +719,24 @@ public class ModelControl : MonoBehaviour {
 
         if (smooth_level == 1) {
             if (smooth_step == 0) {
-                this.iris_left_x = head_movement_target.iris_left_x;
-                this.iris_left_y = head_movement_target.iris_left_y;
-                this.iris_right_x = head_movement_target.iris_right_x;
-                this.iris_right_y = head_movement_target.iris_right_y;
-                this.eye_openness_left = head_movement_target.eye_openness_left;
-                this.eye_openness_right = head_movement_target.eye_openness_right;
-                this.head_x = head_movement_target.head_x;
-                this.head_y = head_movement_target.head_y;
-                this.head_z = head_movement_target.head_z;
-                this.mouth_openness_x = head_movement_target.mouth_openness_x;
-                this.mouth_openness_y = head_movement_target.mouth_openness_y;
-                this.face_position_x = head_movement_target.face_position_x;
-                this.face_position_y = head_movement_target.face_position_y;
-                this.face_position_z = head_movement_target.face_position_z;
-                this.smile_ratio = head_movement_target.smile_ratio;
-                this.eyebrow_liftedness = head_movement_target.eyebrow_liftedness;
+                if (! this.lock_head_movements) {
+                    this.iris_left_x = head_movement_target.iris_left_x;
+                    this.iris_left_y = head_movement_target.iris_left_y;
+                    this.iris_right_x = head_movement_target.iris_right_x;
+                    this.iris_right_y = head_movement_target.iris_right_y;
+                    this.eye_openness_left = head_movement_target.eye_openness_left;
+                    this.eye_openness_right = head_movement_target.eye_openness_right;
+                    this.head_x = head_movement_target.head_x;
+                    this.head_y = head_movement_target.head_y;
+                    this.head_z = head_movement_target.head_z;
+                    this.mouth_openness_x = head_movement_target.mouth_openness_x;
+                    this.mouth_openness_y = head_movement_target.mouth_openness_y;
+                    this.face_position_x = head_movement_target.face_position_x;
+                    this.face_position_y = head_movement_target.face_position_y;
+                    this.face_position_z = head_movement_target.face_position_z;
+                    this.smile_ratio = head_movement_target.smile_ratio;
+                    this.eyebrow_liftedness = head_movement_target.eyebrow_liftedness;
+                }
             }
         } else {
             HeadMovementData head_movement_step;
@@ -736,32 +767,42 @@ public class ModelControl : MonoBehaviour {
                 head_movement_step.eyebrow_liftedness = (head_movement_target.eyebrow_liftedness - this.eyebrow_liftedness) / smooth_level;
 
             } else if (smooth_step >= smooth_level) {
-                goto skip_step;
+                return;
             } else {
                 head_movement_step = this.head_movement_step;
                 if (head_movement_step == null) {
-                    goto skip_step;
+                    return;
                 }
             }
-
-            this.iris_left_x += head_movement_step.iris_left_x;
-            this.iris_left_y += head_movement_step.iris_left_y;
-            this.iris_right_x += head_movement_step.iris_right_x;
-            this.iris_right_y += head_movement_step.iris_right_y;
-            this.eye_openness_left += head_movement_step.eye_openness_left;
-            this.eye_openness_right += head_movement_step.eye_openness_right;
-            this.head_x += head_movement_step.head_x;
-            this.head_y += head_movement_step.head_y;
-            this.head_z += head_movement_step.head_z;
-            this.mouth_openness_x += head_movement_step.mouth_openness_x;
-            this.mouth_openness_y += head_movement_step.mouth_openness_y;
-            this.face_position_x += head_movement_step.face_position_x;
-            this.face_position_y += head_movement_step.face_position_y;
-            this.face_position_z += head_movement_step.face_position_z;
-            this.smile_ratio += head_movement_step.smile_ratio;
-            this.eyebrow_liftedness += head_movement_step.eyebrow_liftedness;
-
-            skip_step:;
+            
+            if (! this.lock_head_movements) {
+                this.iris_left_x += head_movement_step.iris_left_x;
+                this.iris_left_y += head_movement_step.iris_left_y;
+                this.iris_right_x += head_movement_step.iris_right_x;
+                this.iris_right_y += head_movement_step.iris_right_y;
+                this.eye_openness_left += head_movement_step.eye_openness_left;
+                this.eye_openness_right += head_movement_step.eye_openness_right;
+                this.head_x += head_movement_step.head_x;
+                this.head_y += head_movement_step.head_y;
+                this.head_z += head_movement_step.head_z;
+                this.mouth_openness_x += head_movement_step.mouth_openness_x;
+                this.mouth_openness_y += head_movement_step.mouth_openness_y;
+                this.face_position_x += head_movement_step.face_position_x;
+                this.face_position_y += head_movement_step.face_position_y;
+                this.face_position_z += head_movement_step.face_position_z;
+                this.smile_ratio += head_movement_step.smile_ratio;
+                this.eyebrow_liftedness += head_movement_step.eyebrow_liftedness;
+            }
+        }
+        
+        if (smooth_step == 0) {
+            // We may have just receive this the first time. Check whether we should auto adjust.
+            if (this.should_auto_set_position_adjustment) {
+                this.should_auto_set_position_adjustment = false;
+                this.position_adjustment_deepness = -head_movement_target.face_position_z * head_size;
+                this.position_adjustment_horizontal = -head_movement_target.face_position_x * head_size;
+                this.position_adjustment_vertical = -head_movement_target.face_position_y * head_size;
+            }
         }
     }
 
@@ -776,12 +817,14 @@ public class ModelControl : MonoBehaviour {
 
         if (smooth_level == 1) {
             if (smooth_step == 0) {
-                this.happiness = expression_target.happiness;
-                this.sadness = expression_target.sadness;
-                this.surprise = expression_target.surprise;
-                this.fear = expression_target.fear;
-                this.disgust = expression_target.disgust;
-                this.anger = expression_target.anger;
+                if (! this.lock_expressions) {
+                    this.happiness = expression_target.happiness;
+                    this.sadness = expression_target.sadness;
+                    this.surprise = expression_target.surprise;
+                    this.fear = expression_target.fear;
+                    this.disgust = expression_target.disgust;
+                    this.anger = expression_target.anger;
+                }
             }
         } else {
             ExpressionData expression_step;
@@ -798,22 +841,21 @@ public class ModelControl : MonoBehaviour {
                 expression_step.anger = (expression_target.anger - this.anger) / smooth_level;
 
             } else if (smooth_step >= smooth_level) {
-                goto skip_step;
+                return;
             } else {
                 expression_step = this.expression_step;
                 if (expression_step == null) {
-                    goto skip_step;
+                    return;
                 }
             }
-
-            this.happiness += expression_step.happiness;
-            this.sadness += expression_step.sadness;
-            this.surprise += expression_step.surprise;
-            this.fear += expression_step.fear;
-            this.disgust += expression_step.disgust;
-            this.anger += expression_step.anger;
-
-            skip_step:;
+            if (! this.lock_expressions) {
+                this.happiness += expression_step.happiness;
+                this.sadness += expression_step.sadness;
+                this.surprise += expression_step.surprise;
+                this.fear += expression_step.fear;
+                this.disgust += expression_step.disgust;
+                this.anger += expression_step.anger;
+            }
         }
     }
 
@@ -828,7 +870,9 @@ public class ModelControl : MonoBehaviour {
 
         if (smooth_level == 1) {
             if (smooth_step == 0) {
-                // this.thing = body_movement_target.thing;
+                if (! this.lock_body_movements) {
+                    // this.thing = body_movement_target.thing;
+                }
             }
         } else {
             BodyMovementData body_movement_step;
@@ -840,17 +884,16 @@ public class ModelControl : MonoBehaviour {
                 // body_movement_step.thing = (body_movement_target.thing - this.thing) / smooth_level;
                 
             } else if (smooth_step >= smooth_level) {
-                goto skip_step;
+                return;
             } else {
                 body_movement_step = this.body_movement_step;
                 if (body_movement_step == null) {
-                    goto skip_step;
+                    return;
                 }
             }
-
-            // this.thing += body_movement_step.thing;
-
-            skip_step:;
+            if (!lock_body_movements) {
+                // this.thing += body_movement_step.thing;
+            }
         }
     }
 
@@ -1133,8 +1176,26 @@ public class ModelControl : MonoBehaviour {
             ) * 0.5f;
         }
     }
+    
+    void set_root_to_head() {
+        GameObject body_root = this.body_root;
+        GameObject head = this.head;
+        
+        if ((body_root != null) && (head != null)) {
+            this.root_to_head = utils.point_difference(body_root.transform.position, head.transform.position);
+        }
+    }
 
+    bool maybe_readjust() {
+        bool readjust = this.readjust;
+        if (readjust) {
+            this.invoke_adjustments();
+        }
+        return readjust;
+    }
+    
     void invoke_adjustments() {
+        this.readjust = false;
         this.try_adjust_colliders();
         this.try_adjust_chest_gravity();
         this.try_adjust_ear_cat_gravity();
@@ -1155,15 +1216,10 @@ public class ModelControl : MonoBehaviour {
         }
     }
 
-    void set_hips_position() {
+    void set_root_position() {
         GameObject body_root = this.body_root;
-        GameObject hips = this.hips;
-        if ((body_root != null) && (hips != null)) {
-            /* Revert the rotation */
-            this.hips_position = (
-                Quaternion.Inverse(hips.transform.rotation) * hips.transform.position -
-                Quaternion.Inverse(hips.transform.rotation) * body_root.transform.position
-            );
+        if (body_root != null) {
+            this.root_position =  body_root.transform.position;
         }
     }
 
@@ -1199,10 +1255,14 @@ public class ModelControl : MonoBehaviour {
     // Start is called before the first frame update
 
     void Start() {
+        if (this.auto_set_position_adjustment) {
+            this.should_auto_set_position_adjustment = true;
+        }
+        
         this.try_set_body_parts();
 
         this.set_head_size();
-        this.set_hips_position();
+        this.set_root_position();
 
         this.invoke_adjustments();
 
@@ -1211,6 +1271,7 @@ public class ModelControl : MonoBehaviour {
         this.set_fps();
 
         this.set_shoulder_length();
+        this.set_root_to_head();
 
         // Updates
 
@@ -1270,7 +1331,7 @@ public class ModelControl : MonoBehaviour {
             neck.transform.rotation = rotation;
 
             rotation = rotation * rotation_change;
-            head.transform.rotation = neck.transform.rotation * rotation;
+            head.transform.rotation = rotation;
         }
     }
 
@@ -1341,37 +1402,39 @@ public class ModelControl : MonoBehaviour {
 
     void update_position() {
         GameObject body_root = this.body_root;
-        GameObject hips = this.hips;
         GameObject head = this.head;
-        GameObject neck = this.neck;
 
-        if ((body_root != null) && (hips != null) && (head != null) && (neck != null)) {
-
-            Vector3 neck_difference = neck.transform.position - head.transform.position;
-            Vector3 hips_position = body_root.transform.position + (hips.transform.rotation * this.hips_position);
-
+        if ((body_root != null) && (head != null)) {
             Float32 head_size = this.head_size;
-
-            Float32 position_x = this.default_position_horizontal;
-            if (! this.lock_position_horizontal) {
-                position_x += this.face_position_y * head_size + neck_difference.x;
-            }
-
-            Float32 position_y = this.default_position_vertical;
-            if (! this.lock_position_vertical) {
-                position_y = this.face_position_x * head_size + neck_difference.y;
-            }
-
-            Float32 position_z = + this.default_position_deepness;
-            if (! this.lock_position_deepness) {
-               position_z += this.face_position_z * head_size + neck_difference.z;
-            }
-
-            hips.transform.position = new Vector3(
-                hips_position.x + position_x,
-                hips_position.y + position_y,
-                hips_position.z + position_z
+            
+            Vector3 head_difference = -(
+                head.transform.position - body_root.transform.position - 
+                (body_root.transform.rotation * new Vector3(0.0f, this.root_to_head, 0.0f))
             );
+            
+            Vector3 new_position = body_root.transform.rotation * new Vector3(
+                this.face_position_y * head_size + this.position_adjustment_vertical + head_difference.x,
+                this.face_position_x * head_size + this.position_adjustment_horizontal + head_difference.y,
+                this.face_position_z * head_size + this.position_adjustment_deepness + head_difference.z
+            );
+            Vector3 current_position = body_root.transform.position;
+            
+            Float32 new_position_x = current_position.x;
+            if (! this.lock_position_horizontal) {
+                new_position_x = utils.limit_target(new_position_x, new_position.x, this.max_position_change);
+            }
+            
+            Float32 new_position_y = current_position.y;
+            if (! this.lock_position_horizontal) {
+                new_position_y = utils.limit_target(new_position_y, new_position.y, this.max_position_change);
+            }
+            
+            Float32 new_position_z = current_position.z;
+            if (! this.lock_position_deepness) {
+                new_position_z = utils.limit_target(new_position_z, new_position.z, this.max_position_change);
+            }
+            
+            body_root.transform.position = new Vector3(new_position_x, new_position_y, new_position_z);
         }
     }
 
@@ -1403,7 +1466,7 @@ public class ModelControl : MonoBehaviour {
 
         // Detect whether we should close the eyes
         if (
-            ((!did_left_eye_close) && (left_eye_close_step != 0)) ||
+            ((! did_left_eye_close) && (left_eye_close_step != 0)) ||
             (eye_openness_left <= close_eye_at) ||
             (
                 (eye_openness_left <= open_eye_at) &&
@@ -1420,7 +1483,7 @@ public class ModelControl : MonoBehaviour {
         }
 
         if (
-            ((!did_right_eye_close) && (right_eye_close_step != 0)) ||
+            ((! did_right_eye_close) && (right_eye_close_step != 0)) ||
             (eye_openness_right <= close_eye_at) ||
             (
                 (eye_openness_right <= open_eye_at) &&
@@ -1884,7 +1947,6 @@ public class ModelControl : MonoBehaviour {
             face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_HIGHLIGHT_HIDE, this.expression_eye_highlight_hide);
 
 
-
             face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYEBROW_FUN, this.expression_eyebrow_fun);
             // At high values might cause eyebrow to go under the skin partially
             face_mesh.SetBlendShapeWeight(
@@ -1915,10 +1977,11 @@ public class ModelControl : MonoBehaviour {
     }
 
 
-
-
     // Update is called once per frame
     void Update() {
+        // Readjust as requested.
+        this.maybe_readjust();
+        
         // Pull them at the start in case of race condition happens.
         HeadMovementData head_movement_target = this.head_movement_target;
         ExpressionData expression_target = this.expression_target;
