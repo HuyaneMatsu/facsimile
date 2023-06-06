@@ -3,7 +3,7 @@ __all__ = ('Vector3',)
 import sys
 from collections import namedtuple as NamedTuple
 from contextlib import contextmanager as to_context_manager
-from datetime import datetime
+from datetime import datetime as DateTime
 from math import sqrt
 from os import (
     close as close_file_descriptor, devnull, dup as duplicate_file_descriptor, dup2 as duplicate_file_descriptor_to
@@ -83,9 +83,9 @@ def suppress_stdout_and_stderr(suppress_python):
     new_stderr.close()
 
 
-def log(message, when=None):
+def log(message, when = None):
     if when is None:
-        when = datetime.utcnow()
+        when = DateTime.utcnow()
     
     sys.stdout.write(f'{when:{DATETIME_FORMAT_CODE}}: {message}\n')
 
