@@ -38,8 +38,6 @@ def get_named_parameter(name):
 SHOULD_DRAW = ('--draw' in COMMAND_LINE_PARAMETERS)
 SHOULD_CONNECT = ('--no-connect' not in COMMAND_LINE_PARAMETERS)
 
-ALLOW_FACE = ('--no-face' not in COMMAND_LINE_PARAMETERS)
-ALLOW_EXPRESSIONS = ('--no-expressions' not in COMMAND_LINE_PARAMETERS)
 ALLOW_BODY = ('--no-body' not in COMMAND_LINE_PARAMETERS)
 
-CONNECT_URL = get_named_parameter('--to')
+CONNECT_URL = get_named_parameter('--read-from')

@@ -33,7 +33,7 @@ Start up the server with `--to` parameter. Put the displayed address by DroidCam
 `--to` is for the "IP CAM address" with "/video" suffix. Example:
 
 ```sh
-python3 server --to http://0.0.0.0:4747/video
+python3 server --read-from http://0.0.0.0:4747/video
 ```
 
 - Note: If you run it as above without having Unity set&open then nothing much will happen.

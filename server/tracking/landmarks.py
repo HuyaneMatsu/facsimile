@@ -75,6 +75,32 @@ class Landmarks:
         
         return cls(image, result, None, face_landmarks, None, None)
     
+    @classmethod
+    def from_full_mesh_result(cls, image, result):
+        """
+        Creates a new landmarks instance from the given image and full mesh result.
+        
+        Parameters
+        ----------
+        image : `numpy.ndarray`
+            The read image.
+        result : `type<mediapipe.python.solution_base.SolutionOutputs>`
+            The read result.
+        
+        Returns
+        -------
+        self : `instance<cls>`
+        """
+        face_landmarks = result.face_landmarks
+        if (face_landmarks is not None):
+            face_landmarks = face_landmarks.landmark
+        
+        body_landmarks = result.pose_landmarks
+        if (body_landmarks is not None):
+            body_landmarks = body_landmarks.landmark
+        
+        return cls(image, result, body_landmarks, face_landmarks, None, None)
+    
     
     def get_face_for_drawing(self):
         """
@@ -84,6 +110,22 @@ class Landmarks:
         -------
         face_for_drawing : `mediapipe.framework.formats.landmark_pb2.NormalizedLandmarkList`
         """
-        multi_face_landmarks = self.result.multi_face_landmarks
-        if (multi_face_landmarks is not None):
-            return multi_face_landmarks[0]
+        result = self.result
+        if hasattr(result, 'face_landmarks'):
+            return result.face_landmarks
+        
+        if hasattr(result, 'multi_face_landmarks'):
+            return result.multi_face_landmarks[0]
+    
+    
+    def get_body_for_drawing(self):
+        """
+        Gets body landmark information for drawing.
+        
+        Returns
+        -------
+        body_for_drawing : `mediapipe.framework.formats.landmark_pb2.NormalizedLandmarkList`
+        """
+        result = self.result
+        if hasattr(result, 'pose_landmarks'):
+            return result.pose_landmarks

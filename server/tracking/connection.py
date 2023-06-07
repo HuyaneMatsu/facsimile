@@ -1,4 +1,4 @@
-__all__ = ('try_connect_socket',)
+__all__ = ('socket_disconnected', 'try_connect_socket')
 
 from time import sleep
 from socket import socket as Socket, AF_INET as SOCKET_FAMILY__AF_INET, SOCK_STREAM as SOCKET_TYPE__STREAM
@@ -33,3 +33,10 @@ def try_connect_socket():
     
     log(f'CONNECTION | Connected to: {format_address(ADDRESS)}')
     return socket
+
+
+def socket_disconnected():
+    """
+    Logs when the socket is disconnected.
+    """
+    log(f'CONNECTION | Disconnected from: {format_address(ADDRESS)}')

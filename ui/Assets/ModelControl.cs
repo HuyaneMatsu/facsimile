@@ -10,10 +10,10 @@ using System.Text;
 using System.Diagnostics;
 
 using Debug = UnityEngine.Debug;
-using Float32 = System.Single;
-using Float64 = System.Double;
-using Int32 = System.Int32;
-using UInt64 = System.UInt64;
+using f32 = System.Single;
+using f64 = System.Double;
+using i32 = System.Int32;
+using u64 = System.UInt64;
 
 
 enum FACE_MESH {
@@ -165,26 +165,26 @@ enum PACKET_TYPE {
 }
 
 public static class utils {
-    public static Float32 square(Float32 value) {
+    public static f32 square(f32 value) {
         return value * value;
     }
     
-    public static Float32 point_difference(Vector3 point_1, Vector3 point_2) {
-        return (Float32)Math.Sqrt((Float64)(
+    public static f32 point_difference(Vector3 point_1, Vector3 point_2) {
+        return (f32)Math.Sqrt((f64)(
             utils.square(point_1.x - point_2.x) +
             utils.square(point_1.y - point_2.y) +
             utils.square(point_1.z - point_2.z)
         ));
     }
     
-    public static Float32 point_difference_2d(Float32 point_1_x, Float32 point_1_y, Float32 point_2_x, Float32 point_2_y) {
-        return (Float32)Math.Sqrt((Float64)(
+    public static f32 point_difference_2d(f32 point_1_x, f32 point_1_y, f32 point_2_x, f32 point_2_y) {
+        return (f32)Math.Sqrt((f64)(
             utils.square(point_1_x - point_2_x) +
             utils.square(point_1_y - point_2_y)
         ));
     }
 
-    public static Float32 merge_values(Float32 value_1, Float32 value_2) {
+    public static f32 merge_values(f32 value_1, f32 value_2) {
         if (value_1 == 0.0f) {
             return value_2;
         } else if (value_2 == 0.0f) {
@@ -203,30 +203,30 @@ public static class utils {
             value_2 = utils.square(value_2);
         }
 
-        Float32 sum = value_1 + value_2;
+        f32 sum = value_1 + value_2;
 
         if (sum < 0.0) {
-            return -(Float32)Math.Sqrt((Float64)(-sum));
+            return -(f32)Math.Sqrt((f64)(-sum));
         } else {
-            return (Float32)Math.Sqrt((Float64)sum);
+            return (f32)Math.Sqrt((f64)sum);
         }
     }
     
-    public static UInt64 get_length_of(Array array) {
-        return (UInt64)array.Length;
+    public static u64 get_length_of(Array array) {
+        return (u64)array.Length;
     }
     
-    public static Float32 string_to_float32(String value)
+    public static f32 string_to_float32(String value)
     {
-        return Float32.Parse(value);
+        return f32.Parse(value);
     }
     
-    public static Float32[] string_to_float32(String[] string_array)
+    public static f32[] string_to_float32(String[] string_array)
     {
-        UInt64 array_length = utils.get_length_of(string_array);
-        Float32[] float32_array = new Float32[array_length];
+        u64 array_length = utils.get_length_of(string_array);
+        f32[] float32_array = new f32[array_length];
         
-        for (UInt64 index = 0; index < array_length; index += 1) {
+        for (u64 index = 0; index < array_length; index += 1) {
             float32_array[index] = string_to_float32(string_array[index]);
         }
         
@@ -235,11 +235,11 @@ public static class utils {
     
     public static ElementType[] slice_array<ElementType>(
         ElementType[] array,
-        UInt64 start = 0,
-        UInt64 end = UInt64.MaxValue,
-        UInt64 step = 1
+        u64 start = 0,
+        u64 end = u64.MaxValue,
+        u64 step = 1
     ) {
-        UInt64 array_length = utils.get_length_of(array);
+        u64 array_length = utils.get_length_of(array);
         if (end > array_length) {
             end = array_length;
         }
@@ -252,13 +252,13 @@ public static class utils {
             step = 1;
         }
         
-        UInt64 checked_area = end - start;
-        UInt64 new_array_length = checked_area / step + Convert.ToUInt64(checked_area % step != 0);
+        u64 checked_area = end - start;
+        u64 new_array_length = checked_area / step + Convert.ToUInt64(checked_area % step != 0);
         
         ElementType[] new_array = new ElementType[new_array_length];
         
-        UInt64 old_array_index = start;
-        UInt64 new_array_index = 0;
+        u64 old_array_index = start;
+        u64 new_array_index = 0;
         
         while (true) {
             if (old_array_index >= end) {
@@ -274,8 +274,8 @@ public static class utils {
         return new_array;
     }
     
-    public static Float32 limit_target(Float32 root_position, Float32 new_position, Float32 max_change) {
-        Float32 change = new_position - root_position;
+    public static f32 limit_target(f32 root_position, f32 new_position, f32 max_change) {
+        f32 change = new_position - root_position;
         if (Math.Abs(change) > max_change) {
             if (new_position > root_position) {
                 new_position = root_position + max_change;
@@ -290,26 +290,26 @@ public static class utils {
 
 
 public class HeadMovementData {
-    public Float32 iris_left_x = 0.0f;
-    public Float32 iris_left_y = 0.0f;
-    public Float32 iris_right_x = 0.0f;
-    public Float32 iris_right_y = 0.0f;
-    public Float32 eye_openness_left = 0.0f;
-    public Float32 eye_openness_right = 0.0f;
-    public Float32 head_x = 0.0f;
-    public Float32 head_y = 0.0f;
-    public Float32 head_z = 0.0f;
-    public Float32 mouth_openness_x = 0.0f;
-    public Float32 mouth_openness_y = 0.0f;
-    public Float32 face_position_x = 0.0f;
-    public Float32 face_position_y = 0.0f;
-    public Float32 face_position_z = 0.0f;
-    public Float32 smile_ratio = 0.0f;
-    public Float32 eyebrow_liftedness = 0.0f;
+    public f32 iris_left_x = 0.0f;
+    public f32 iris_left_y = 0.0f;
+    public f32 iris_right_x = 0.0f;
+    public f32 iris_right_y = 0.0f;
+    public f32 eye_openness_left = 0.0f;
+    public f32 eye_openness_right = 0.0f;
+    public f32 head_x = 0.0f;
+    public f32 head_y = 0.0f;
+    public f32 head_z = 0.0f;
+    public f32 mouth_openness_x = 0.0f;
+    public f32 mouth_openness_y = 0.0f;
+    public f32 face_position_x = 0.0f;
+    public f32 face_position_y = 0.0f;
+    public f32 face_position_z = 0.0f;
+    public f32 smile_ratio = 0.0f;
+    public f32 eyebrow_liftedness = 0.0f;
     
     public HeadMovementData() {}
     
-    public HeadMovementData(Float32[] packet_data) {
+    public HeadMovementData(f32[] packet_data) {
         this.iris_left_x = packet_data[0];
         this.iris_left_y = packet_data[1];
         
@@ -337,16 +337,16 @@ public class HeadMovementData {
 
 
 public class ExpressionData {
-    public Float32 happiness = 0.0f;
-    public Float32 sadness = 0.0f;
-    public Float32 surprise = 0.0f;
-    public Float32 fear = 0.0f;
-    public Float32 disgust = 0.0f;
-    public Float32 anger = 0.0f;
+    public f32 happiness = 0.0f;
+    public f32 sadness = 0.0f;
+    public f32 surprise = 0.0f;
+    public f32 fear = 0.0f;
+    public f32 disgust = 0.0f;
+    public f32 anger = 0.0f;
     
     public ExpressionData() {}
     
-    public ExpressionData(Float32[] packet_data) {
+    public ExpressionData(f32[] packet_data) {
         this.happiness = packet_data[0];
         this.sadness = packet_data[1];
         this.surprise = packet_data[2];
@@ -358,11 +358,14 @@ public class ExpressionData {
 
 
 public class BodyMovementData {
-    // No fields yet
+    public f32 shoulder_x = 0.0f;
+    public f32 shoulder_z = 0.0f;
     
     public BodyMovementData() {}
     
-    public BodyMovementData(Float32[] packet_data) {
+    public BodyMovementData(f32[] packet_data) {
+        this.shoulder_x = packet_data[0];
+        this.shoulder_z = packet_data[1];
     }
 }
 
@@ -375,47 +378,47 @@ public class ModelControl : MonoBehaviour {
     [Header("Camera")]
     [SerializeField]
     [Range(-15.0f, +15.0f)]
-    public Float32 camera_angle_vertical = -15.0f;
+    public f32 camera_angle_vertical = -15.0f;
 
     [Header("Arms")]
     [SerializeField]
     [Range(-90.0f, 0.0f)]
-    public Float32 right_arm_angle = -60.0f;
+    public f32 right_arm_angle = -60.0f;
 
     [SerializeField]
     [Range(-90.0f, 0.0f)]
-    public Float32 left_arm_angle = -60.0f;
+    public f32 left_arm_angle = -60.0f;
 
     [Header("Mouth")]
     [SerializeField]
     [Range(50.0f, 80.0f)]
-    public Float32 default_mouth_openness_horizontal = +73.0f;
+    public f32 default_mouth_openness_horizontal = +73.0f;
 
     [SerializeField]
     [Range(10.0f, 40.0f)]
-    public Float32 default_mouth_openness_vertical = +26.0f;
+    public f32 default_mouth_openness_vertical = +26.0f;
 
     [Header("Eyes")]
     [SerializeField]
     [Range(30.0f, 70.0f)]
-    public Float32 open_eye_at = 50.0f;
+    public f32 open_eye_at = 50.0f;
     [SerializeField]
     [Range(10.0f, 50.0f)]
-    public Float32 close_eye_at = 25.0f;
+    public f32 close_eye_at = 25.0f;
 
     [Header("Position")]
     [SerializeField]
     public bool auto_set_position_adjustment = true;
     private bool should_auto_set_position_adjustment = false;
     [Range(-10.0f, 10.0f)]
-    public Float32 position_adjustment_deepness = 0.0f;
+    public f32 position_adjustment_deepness = 0.0f;
     [Range(-10.0f, 10.0f)]
-    public Float32 position_adjustment_horizontal = 0.0f;
+    public f32 position_adjustment_horizontal = 0.0f;
     [Range(-10.0f, 10.0f)]
-    public Float32 position_adjustment_vertical = 0.0f;
+    public f32 position_adjustment_vertical = 0.0f;
     [SerializeField]
     [Range(0.0f, 10.0f)]
-    public Float32 max_position_change = 0.01f;
+    public f32 max_position_change = 0.01f;
     [SerializeField]
     public bool lock_position_deepness = true;
     [SerializeField]
@@ -426,17 +429,17 @@ public class ModelControl : MonoBehaviour {
     [Header("Smoothing")]
     [SerializeField]
     [Range(1, 60)]
-    public Int32 application_fps = 30;
+    public i32 application_fps = 30;
     [Range(1, 60)]
-    public Int32 server_fps = 15;
+    public i32 server_fps = 15;
 
-    private Int32 smooth_level = 1;
-    private Int32 head_movement_smooth_step = 0;
-    private Int32 expression_smooth_step = 0;
-    private Int32 body_movement_smooth_step = 0;
+    private i32 smooth_level = 1;
+    private i32 head_movement_smooth_step = 0;
+    private i32 expression_smooth_step = 0;
+    private i32 body_movement_smooth_step = 0;
 
-    private const Float32 blinkage_speed = 12.0f;
-    private Int32 blinkage_steps = 8;
+    private const f32 blinkage_speed = 12.0f;
+    private i32 blinkage_steps = 8;
     
     [Header("Adjustment")]
     public bool readjust = false;
@@ -444,25 +447,25 @@ public class ModelControl : MonoBehaviour {
     [Header("Hair")]
     [SerializeField]
     [Range(0.0f, 4.0f)]
-    public Float32 hair_stiffness = 0.36f;
+    public f32 hair_stiffness = 0.36f;
     [SerializeField]
     [Range(0.0f, 1.0f)]
-    public Float32 hair_gravity = 0.08f;
+    public f32 hair_gravity = 0.08f;
     [SerializeField]
     [Range(0.0f, 1.0f)]
-    public Float32 hair_drag = 1.0f;
+    public f32 hair_drag = 1.0f;
 
 
     [Header("Chest")]
     [SerializeField]
     [Range(0.0f, 4.0f)]
-    public Float32 chest_stiffness = 0.2f;
+    public f32 chest_stiffness = 0.2f;
     [SerializeField]
     [Range(0.0f, 1.0f)]
-    public Float32 chest_gravity = 0.05f;
+    public f32 chest_gravity = 0.05f;
     [SerializeField]
     [Range(0.0f, 1.0f)]
-    public Float32 chest_drag = 0.2f;
+    public f32 chest_drag = 0.2f;
     
     [Header("Input")]
     [SerializeField]
@@ -474,56 +477,62 @@ public class ModelControl : MonoBehaviour {
 
     [Header("Head Movements")]
     [Range(-16.0f, +8.0f)]
-    public Float32 iris_left_x = 0.0f;
+    public f32 iris_left_x = 0.0f;
     [Range(-10.0f, +10.0f)]
-    public Float32 iris_left_y = 0.0f;
+    public f32 iris_left_y = 0.0f;
     [Range(-8.0f, +16.0f)]
-    public Float32 iris_right_x = 0.0f;
+    public f32 iris_right_x = 0.0f;
     [Range(-10.0f, +10.0f)]
-    public Float32 iris_right_y = 0.0f;
+    public f32 iris_right_y = 0.0f;
 
     [Range(+0.0f, +100.0f)]
-    public Float32 eye_openness_left = 0.0f;
+    public f32 eye_openness_left = 0.0f;
     [Range(+0.0f, 100.0f)]
-    public Float32 eye_openness_right = 0.0f;
+    public f32 eye_openness_right = 0.0f;
 
     [Range(-90.0f, +90.0f)]
-    public Float32 head_x = 0.0f;
+    public f32 head_x = 0.0f;
     [Range(-60.0f, +30.0f)]
-    public Float32 head_y = 0.0f;
+    public f32 head_y = 0.0f;
     [Range(-90.0f, +90.0f)]
-    public Float32 head_z = 0.0f;
+    public f32 head_z = 0.0f;
 
     [Range(-0.0f, +100.0f)]
-    public Float32 mouth_openness_x = 0.0f;
+    public f32 mouth_openness_x = 0.0f;
     [Range(-0.0f, +100.0f)]
-    public Float32 mouth_openness_y = 0.0f;
+    public f32 mouth_openness_y = 0.0f;
 
     [Range(-5.0f, +5.0f)]
-    public Float32 face_position_x = 0.0f;
+    public f32 face_position_x = 0.0f;
     [Range(-5.0f, +5.0f)]
-    public Float32 face_position_y = 0.0f;
+    public f32 face_position_y = 0.0f;
     [Range(-10.0f, -1.0f)]
-    public Float32 face_position_z = 0.0f;
+    public f32 face_position_z = 0.0f;
 
     [Range(0.0f, 100.0f)]
-    public Float32 smile_ratio = 0.0f;
+    public f32 smile_ratio = 0.0f;
     [Range(0.0f, 100.0f)]
-    public Float32 eyebrow_liftedness = 0.0f;
+    public f32 eyebrow_liftedness = 0.0f;
 
     [Header("Expressions")]
     [Range(0.0f, 100.0f)]
-    public Float32 happiness = 0.0f;
+    public f32 happiness = 0.0f;
     [Range(0.0f, 100.0f)]
-    public Float32 sadness = 0.0f;
+    public f32 sadness = 0.0f;
     [Range(0.0f, 100.0f)]
-    public Float32 surprise = 0.0f;
+    public f32 surprise = 0.0f;
     [Range(0.0f, 100.0f)]
-    public Float32 fear = 0.0f;
+    public f32 fear = 0.0f;
     [Range(0.0f, 100.0f)]
-    public Float32 disgust = 0.0f;
+    public f32 disgust = 0.0f;
     [Range(0.0f, 100.0f)]
-    public Float32 anger = 0.0f;
+    public f32 anger = 0.0f;
+    
+    [Header("Body")]
+    [Range(-180.0f, +180f)]
+    public f32 shoulder_x = 0.0f;
+    [Range(-180.0f, +180f)]
+    public f32 shoulder_z = 0.0f;
     
     // Movements
     
@@ -539,7 +548,6 @@ public class ModelControl : MonoBehaviour {
     private GameObject eye_right = null;
     private GameObject eye_left = null;
 
-    private GameObject chest_upper = null;
     private GameObject neck = null;
     private GameObject head = null;
 
@@ -549,10 +557,13 @@ public class ModelControl : MonoBehaviour {
     private GameObject arm_upper_left = null;
     private GameObject arm_lower_right = null;
     private GameObject arm_lower_left = null;
-    private Float32 shoulder_length = 0.0f;
-    public Float32 root_to_head = 1.6f;
+    private f32 shoulder_length = 0.0f;
+    public f32 root_to_head = 1.6f;
     private GameObject body_root = null;
     private GameObject hips = null;
+    private GameObject spine = null;
+    private GameObject chest = null;
+    private GameObject chest_upper = null;
 
     private SkinnedMeshRenderer face_mesh = null;
 
@@ -562,7 +573,7 @@ public class ModelControl : MonoBehaviour {
     private TcpClient tcp_client = null;
     
     // Connection
-    private Int32 port = 5050;
+    private i32 port = 5050;
     private string address = "127.0.0.1";
     
     // eye close
@@ -572,46 +583,46 @@ public class ModelControl : MonoBehaviour {
     private bool did_left_eye_close = false;
     private bool did_right_eye_close = false;
 
-    private Int32 left_eye_close_step = 0;
-    private Int32 right_eye_close_step = 0;
+    private i32 left_eye_close_step = 0;
+    private i32 right_eye_close_step = 0;
 
 
     /* This will be changed at startup, no worries */
-    private Float32 head_size = 1.0f;
+    private f32 head_size = 1.0f;
     private Vector3 root_position = new Vector3(0.0f, 0.0f, 0.0f);
 
     // Expressions
-    private Float32 expression_eye_close_left = 0.0f;
-    private Float32 expression_eye_close_right = 0.0f;
-    private Float32 expression_eye_fun = 0.0f;
-    private Float32 expression_eye_surprised = 0.0f;
-    private Float32 expression_eye_joy_left = 0.0f;
-    private Float32 expression_eye_joy_right = 0.0f;
-    private Float32 expression_eye_angry = 0.0f;
-    private Float32 expression_eye_spread = 0.0f;
-    private Float32 expression_eye_sorrow = 0.0f;
-    private Float32 expression_eye_highlight_hide = 0.0f;
+    private f32 expression_eye_close_left = 0.0f;
+    private f32 expression_eye_close_right = 0.0f;
+    private f32 expression_eye_fun = 0.0f;
+    private f32 expression_eye_surprised = 0.0f;
+    private f32 expression_eye_joy_left = 0.0f;
+    private f32 expression_eye_joy_right = 0.0f;
+    private f32 expression_eye_angry = 0.0f;
+    private f32 expression_eye_spread = 0.0f;
+    private f32 expression_eye_sorrow = 0.0f;
+    private f32 expression_eye_highlight_hide = 0.0f;
 
-    private Float32 expression_eyebrow_fun = 0.0f;
-    private Float32 expression_eyebrow_surprised = 0.0f;
-    private Float32 expression_eyebrow_angry = 0.0f;
-    private Float32 expression_eyebrow_joy = 0.0f;
-    private Float32 expression_eyebrow_sorrow = 0.0f;
+    private f32 expression_eyebrow_fun = 0.0f;
+    private f32 expression_eyebrow_surprised = 0.0f;
+    private f32 expression_eyebrow_angry = 0.0f;
+    private f32 expression_eyebrow_joy = 0.0f;
+    private f32 expression_eyebrow_sorrow = 0.0f;
 
-    private Float32 expression_mouth_a = 0.0f;
-    private Float32 expression_mouth_i = 0.0f;
-    private Float32 expression_mouth_u = 0.0f;
-    private Float32 expression_mouth_o = 0.0f;
-    private Float32 expression_mouth_fun = 0.0f;
-    private Float32 expression_mouth_surprised = 0.0f;
-    private Float32 expression_mouth_joy = 0.0f;
-    private Float32 expression_mouth_angry = 0.0f;
-    private Float32 expression_mouth_neutral = 0.0f;
-    private Float32 expression_mouth_up = 0.0f;
-    private Float32 expression_mouth_sorrow = 0.0f;
+    private f32 expression_mouth_a = 0.0f;
+    private f32 expression_mouth_i = 0.0f;
+    private f32 expression_mouth_u = 0.0f;
+    private f32 expression_mouth_o = 0.0f;
+    private f32 expression_mouth_fun = 0.0f;
+    private f32 expression_mouth_surprised = 0.0f;
+    private f32 expression_mouth_joy = 0.0f;
+    private f32 expression_mouth_angry = 0.0f;
+    private f32 expression_mouth_neutral = 0.0f;
+    private f32 expression_mouth_up = 0.0f;
+    private f32 expression_mouth_sorrow = 0.0f;
 
-    private Float32 expression_teeth_short_bot = 0.0f;
-    private Float32 expression_teeth_short_top = 0.0f;
+    private f32 expression_teeth_short_bot = 0.0f;
+    private f32 expression_teeth_short_top = 0.0f;
 
     // Connection Methods
     
@@ -633,7 +644,7 @@ public class ModelControl : MonoBehaviour {
         
         TcpClient tcp_client;
         Byte[] payload_buffer;
-        UInt64 length;
+        u64 length;
         NetworkStream stream;
         
         try {          
@@ -650,13 +661,13 @@ public class ModelControl : MonoBehaviour {
                     
                     using (stream = tcp_client.GetStream()) {
                         while (true) {
-                            length = (UInt64)stream.Read(payload_buffer, 0, (Int32)utils.get_length_of(payload_buffer));
+                            length = (u64)stream.Read(payload_buffer, 0, (i32)utils.get_length_of(payload_buffer));
                             if (length == 0) {
                                 break;
                             }
                             
                             var received_payload = new byte[length];
-                            Array.Copy(payload_buffer, 0, received_payload, 0, (Int32)length);
+                            Array.Copy(payload_buffer, 0, received_payload, 0, (i32)length);
                             
                             string received_message = Encoding.ASCII.GetString(received_payload);
                             this.process_packet(received_message.Split(' '));
@@ -679,10 +690,10 @@ public class ModelControl : MonoBehaviour {
     }
 
     public void process_packet(string[] values) {
-        PACKET_TYPE packet_type = (PACKET_TYPE)Int32.Parse(values[0]);
-        
-        Float32[] packet_data = utils.string_to_float32(utils.slice_array<String>(values, start: 1));
-        
+        PACKET_TYPE packet_type = (PACKET_TYPE)i32.Parse(values[0]);
+
+        f32[] packet_data = utils.string_to_float32(utils.slice_array<String>(values, start: 1));
+
         if (packet_type == PACKET_TYPE.HEAD_MOVEMENT) {
             this.set_head_movement(packet_data);
         } else if (packet_type == PACKET_TYPE.EXPRESSION) {
@@ -692,17 +703,17 @@ public class ModelControl : MonoBehaviour {
         }
     }
 
-    void set_head_movement(Float32[] packet_data) {
+    void set_head_movement(f32[] packet_data) {
         this.head_movement_target = new HeadMovementData(packet_data);
         this.head_movement_smooth_step = 0;
     }
 
-    void set_expression(Float32[] packet_data) {
+    void set_expression(f32[] packet_data) {
         this.expression_target = new ExpressionData(packet_data);
         this.expression_smooth_step = 0;
     }
 
-    void set_body_movement(Float32[] packet_data) {
+    void set_body_movement(f32[] packet_data) {
         this.body_movement_target = new BodyMovementData(packet_data);
         this.body_movement_smooth_step = 0;
     }
@@ -713,8 +724,8 @@ public class ModelControl : MonoBehaviour {
             return;
         }
         
-        Int32 smooth_level = this.smooth_level;
-        Int32 smooth_step = this.head_movement_smooth_step;
+        i32 smooth_level = this.smooth_level;
+        i32 smooth_step = this.head_movement_smooth_step;
         this.head_movement_smooth_step = smooth_step + 1;
 
         if (smooth_level == 1) {
@@ -811,8 +822,8 @@ public class ModelControl : MonoBehaviour {
             return;
         }
         
-        Int32 smooth_level = this.smooth_level;
-        Int32 smooth_step = this.expression_smooth_step;
+        i32 smooth_level = this.smooth_level;
+        i32 smooth_step = this.expression_smooth_step;
         this.expression_smooth_step = smooth_step + 1;
 
         if (smooth_level == 1) {
@@ -864,14 +875,15 @@ public class ModelControl : MonoBehaviour {
             return;
         }
         
-        Int32 smooth_level = this.smooth_level;
-        Int32 smooth_step = this.body_movement_smooth_step;
+        i32 smooth_level = this.smooth_level;
+        i32 smooth_step = this.body_movement_smooth_step;
         this.body_movement_smooth_step = smooth_step + 1;
 
         if (smooth_level == 1) {
             if (smooth_step == 0) {
                 if (! this.lock_body_movements) {
-                    // this.thing = body_movement_target.thing;
+                    this.shoulder_x = body_movement_target.shoulder_x;
+                    this.shoulder_z = body_movement_target.shoulder_z;
                 }
             }
         } else {
@@ -881,7 +893,8 @@ public class ModelControl : MonoBehaviour {
                 body_movement_step = new BodyMovementData();
                 this.body_movement_step = body_movement_step;
                 
-                // body_movement_step.thing = (body_movement_target.thing - this.thing) / smooth_level;
+                body_movement_step.shoulder_x = (body_movement_target.shoulder_x - this.shoulder_x) / smooth_level;
+                body_movement_step.shoulder_z = (body_movement_target.shoulder_z - this.shoulder_z) / smooth_level;
                 
             } else if (smooth_step >= smooth_level) {
                 return;
@@ -891,8 +904,9 @@ public class ModelControl : MonoBehaviour {
                     return;
                 }
             }
-            if (!lock_body_movements) {
-                // this.thing += body_movement_step.thing;
+            if (! this.lock_body_movements) {
+                this.shoulder_x += body_movement_step.shoulder_x;
+                this.shoulder_z += body_movement_step.shoulder_z;
             }
         }
     }
@@ -964,9 +978,6 @@ public class ModelControl : MonoBehaviour {
         this.head = this.get_child_with_name(BODY_PART_NAME.HEAD);
         this.neck = this.get_child_with_name(BODY_PART_NAME.NECK);
 
-        // Chest
-        this.chest_upper = this.get_child_with_name(BODY_PART_NAME.CHEST_UPPER);
-
         // Face
 
         GameObject face = this.get_child_with_name(BODY_PART_NAME.FACE);
@@ -992,11 +1003,16 @@ public class ModelControl : MonoBehaviour {
         // root
 
         this.body_root = this.get_child_with_name(BODY_PART_NAME.ROOT);
+        
+        // body
         this.hips = this.get_child_with_name(BODY_PART_NAME.HIPS);
+        this.spine = this.get_child_with_name(BODY_PART_NAME.SPINE);
+        this.chest = this.get_child_with_name(BODY_PART_NAME.CHEST);
+        this.chest_upper = this.get_child_with_name(BODY_PART_NAME.CHEST_UPPER);
     }
 
 
-    void try_adjust_colliders_of(GameObject game_object, Float32 by) {
+    void try_adjust_colliders_of(GameObject game_object, f32 by) {
         VRMSpringBoneColliderGroup collider_groups;
         if (game_object == null) {
             collider_groups = null;
@@ -1064,7 +1080,7 @@ public class ModelControl : MonoBehaviour {
                     Vector3 chest_left_mid_position = chest_left_mid.transform.position - chest_upper_position;
                     Vector3 chest_right_mid_position = chest_right_mid.transform.position - chest_upper_position;
 
-                    Float32 collision_box_size = (
+                    f32 collision_box_size = (
                         utils.point_difference(chest_left_root_position, chest_left_mid_position) +
                         utils.point_difference(chest_right_root_position, chest_right_mid_position)
                     );
@@ -1107,7 +1123,7 @@ public class ModelControl : MonoBehaviour {
                 VRMSpringBoneColliderGroup.SphereCollider[] colliders = neck_collider_group.Colliders;
                 if (colliders.Length == 1) {
                     VRMSpringBoneColliderGroup.SphereCollider collider = colliders[0];
-                    Float32 radius = collider.Radius * 1.1f;
+                    f32 radius = collider.Radius * 1.1f;
                     collider.Radius = radius;
                     Vector3 position_difference = head.transform.position - neck.transform.position;
 
@@ -1224,10 +1240,10 @@ public class ModelControl : MonoBehaviour {
     }
 
     void set_fps() {
-        Int32 application_fps = this.application_fps;
+        i32 application_fps = this.application_fps;
         Application.targetFrameRate = application_fps;
 
-        Int32 smooth_level = Convert.ToInt32(
+        i32 smooth_level = Convert.ToInt32(
             Math.Ceiling(
                 Convert.ToDouble((application_fps)) /
                 Convert.ToDouble((this.server_fps))
@@ -1239,9 +1255,9 @@ public class ModelControl : MonoBehaviour {
         }
         this.smooth_level = smooth_level;
 
-        Int32 blinkage_steps = Convert.ToInt32(
+        i32 blinkage_steps = Convert.ToInt32(
             Math.Ceiling(
-                (Float64)(1.0f / ModelControl.blinkage_speed) *
+                (f64)(1.0f / ModelControl.blinkage_speed) *
                 Convert.ToDouble(application_fps)
             )
         );
@@ -1272,14 +1288,16 @@ public class ModelControl : MonoBehaviour {
 
         this.set_shoulder_length();
         this.set_root_to_head();
-
+        
+        this.head_y = this.camera_angle_vertical;
+        this.shoulder_z = this.camera_angle_vertical;
         // Updates
 
         this.update_arms();
     }
 
     // Update
-    Float32 within_range(Float32 current_value, Float32 target_value, Float32 value_range) {
+    f32 within_range(f32 current_value, f32 target_value, f32 value_range) {
         if (target_value > current_value) {
             current_value += value_range;
 
@@ -1316,22 +1334,55 @@ public class ModelControl : MonoBehaviour {
 
     void update_head() {
         /* Rotate both head and neck by half of the total head rotation. This makes it more natural. */
-        GameObject chest_upper = this.chest_upper;
+        GameObject body_root = this.body_root;
         GameObject neck = this.neck;
         GameObject head = this.head;
 
-        if ((chest_upper != null) && (neck != null) && (head != null)) {
-            Quaternion rotation_change = Quaternion.Euler(
+        if ((body_root != null) && (neck != null) && (head != null)) {
+            Quaternion root_rotation = body_root.transform.rotation;
+            
+            neck.transform.rotation = root_rotation * Quaternion.Euler(
                 (this.head_y - this.camera_angle_vertical) * 0.5f,
                 this.head_x * 0.5f,
                 this.head_z * 0.5f
             );
+            
+            head.transform.rotation = root_rotation * Quaternion.Euler(
+                this.head_y - this.camera_angle_vertical,
+                this.head_x,
+                this.head_z
+            );
+        }
+    }
 
-            Quaternion rotation = chest_upper.transform.rotation * rotation_change;
-            neck.transform.rotation = rotation;
 
-            rotation = rotation * rotation_change;
-            head.transform.rotation = rotation;
+    void update_body() {
+        /* Rotate spine and chest too. This makes it more natural. */
+        GameObject body_root = this.body_root;
+        GameObject spine = this.spine;
+        GameObject chest = this.chest;
+        GameObject chest_upper = this.chest_upper;
+
+        if ((body_root != null) && (spine != null) && (chest != null) && (chest_upper != null)) {
+            Quaternion root_rotation = body_root.transform.rotation;
+
+            spine.transform.rotation = root_rotation * Quaternion.Euler(
+                0.0f,
+                this.shoulder_x * 0.4f, // subtract hip later when implemented
+                this.shoulder_z * 0.4f
+            );
+
+            chest.transform.rotation = root_rotation * Quaternion.Euler(
+                0.0f,
+                this.shoulder_x * 0.8f, // subtract hip later when implemented
+                this.shoulder_z * 0.8f
+            );
+            
+            chest_upper.transform.rotation = root_rotation * Quaternion.Euler(
+                0.0f,
+                this.shoulder_x * 1.0f, // subtract hip later when implemented
+                this.shoulder_z * 1.0f
+            );
         }
     }
 
@@ -1357,8 +1408,8 @@ public class ModelControl : MonoBehaviour {
             Transform arm_upper_right_transform = arm_upper_right.transform;
             Transform arm_upper_left_transform = arm_upper_left.transform;
 
-            Float32 right_arm_angle = this.right_arm_angle;
-            Float32 left_arm_angle = this.left_arm_angle;
+            f32 right_arm_angle = this.right_arm_angle;
+            f32 left_arm_angle = this.left_arm_angle;
 
             arm_upper_right_transform.rotation = (
                 shoulder_right_transform.rotation * Quaternion.Euler(0.0f, 0.0f, right_arm_angle)
@@ -1405,7 +1456,7 @@ public class ModelControl : MonoBehaviour {
         GameObject head = this.head;
 
         if ((body_root != null) && (head != null)) {
-            Float32 head_size = this.head_size;
+            f32 head_size = this.head_size;
             
             Vector3 head_difference = -(
                 head.transform.position - body_root.transform.position - 
@@ -1419,17 +1470,17 @@ public class ModelControl : MonoBehaviour {
             );
             Vector3 current_position = body_root.transform.position;
             
-            Float32 new_position_x = current_position.x;
+            f32 new_position_x = current_position.x;
             if (! this.lock_position_horizontal) {
                 new_position_x = utils.limit_target(new_position_x, new_position.x, this.max_position_change);
             }
             
-            Float32 new_position_y = current_position.y;
+            f32 new_position_y = current_position.y;
             if (! this.lock_position_horizontal) {
                 new_position_y = utils.limit_target(new_position_y, new_position.y, this.max_position_change);
             }
             
-            Float32 new_position_z = current_position.z;
+            f32 new_position_z = current_position.z;
             if (! this.lock_position_deepness) {
                 new_position_z = utils.limit_target(new_position_z, new_position.z, this.max_position_change);
             }
@@ -1440,8 +1491,8 @@ public class ModelControl : MonoBehaviour {
 
 
     void set_eye_expressions(HeadMovementData head_movement_target) {
-        Float32 eye_openness_left;
-        Float32 eye_openness_right;
+        f32 eye_openness_left;
+        f32 eye_openness_right;
         
         if (head_movement_target == null) {
             eye_openness_left = 0f;
@@ -1454,12 +1505,12 @@ public class ModelControl : MonoBehaviour {
         
         bool is_left_eye_closing = this.is_left_eye_closing;
         bool is_right_eye_closing = this.is_right_eye_closing;
-        Int32 left_eye_close_step = this.left_eye_close_step;
-        Int32 right_eye_close_step = this.right_eye_close_step;
+        i32 left_eye_close_step = this.left_eye_close_step;
+        i32 right_eye_close_step = this.right_eye_close_step;
         bool did_left_eye_close = this.did_left_eye_close;
         bool did_right_eye_close = this.did_right_eye_close;
-        Float32 close_eye_at = this.close_eye_at;
-        Float32 open_eye_at = this.open_eye_at;
+        f32 close_eye_at = this.close_eye_at;
+        f32 open_eye_at = this.open_eye_at;
 
         bool should_close_left;
         bool should_close_right;
@@ -1531,8 +1582,8 @@ public class ModelControl : MonoBehaviour {
             }
         }
 
-        this.expression_eye_close_left = left_eye_close_step * (70.0f / (Float32)this.blinkage_steps);
-        this.expression_eye_close_right = right_eye_close_step * (70.0f / (Float32)this.blinkage_steps);
+        this.expression_eye_close_left = left_eye_close_step * (70.0f / (f32)this.blinkage_steps);
+        this.expression_eye_close_right = right_eye_close_step * (70.0f / (f32)this.blinkage_steps);
 
         // Store state
         this.left_eye_close_step = left_eye_close_step;
@@ -1544,14 +1595,14 @@ public class ModelControl : MonoBehaviour {
 
 
     void set_mouth_expressions() {
-        Float32 mouth_x = this.mouth_openness_x - this.default_mouth_openness_horizontal;
-        Float32 mouth_y = this.mouth_openness_y - this.default_mouth_openness_vertical;
-        Float32 smile_ratio = this.smile_ratio;
+        f32 mouth_x = this.mouth_openness_x - this.default_mouth_openness_horizontal;
+        f32 mouth_y = this.mouth_openness_y - this.default_mouth_openness_vertical;
+        f32 smile_ratio = this.smile_ratio;
 
-        Float32 expression_mouth_a = 0.0f;
-        Float32 expression_mouth_i = 0.0f;
-        Float32 expression_mouth_u = 0.0f;
-        Float32 expression_mouth_o = 0.0f;
+        f32 expression_mouth_a = 0.0f;
+        f32 expression_mouth_i = 0.0f;
+        f32 expression_mouth_u = 0.0f;
+        f32 expression_mouth_o = 0.0f;
 
         if (mouth_y > 6.0f) {
             expression_mouth_a = (mouth_y - 6.0f) * 1.5f;
@@ -1584,7 +1635,7 @@ public class ModelControl : MonoBehaviour {
 
             /* When u value is too high the face might overflow at places, so we will reduce a and o values */
             if (expression_mouth_u > 50.0f) {
-                Float32 openness_reduction = (expression_mouth_u - 50.0f) * 0.5f;
+                f32 openness_reduction = (expression_mouth_u - 50.0f) * 0.5f;
 
                 expression_mouth_a -= openness_reduction;
                 if (expression_mouth_a < 0.0f) {
@@ -1618,13 +1669,13 @@ public class ModelControl : MonoBehaviour {
     }
 
     void update_happiness() {
-        Float32 happiness = this.happiness;
+        f32 happiness = this.happiness;
 
         // Cap on eye fun with blinkage
-        Float32 expression_eye_close_left = this.expression_eye_close_left;
-        Float32 expression_eye_close_right = this.expression_eye_close_right;
+        f32 expression_eye_close_left = this.expression_eye_close_left;
+        f32 expression_eye_close_right = this.expression_eye_close_right;
 
-        Float32 expression_eye_fun;
+        f32 expression_eye_fun;
 
         if (expression_eye_close_left > expression_eye_close_right) {
             expression_eye_fun = expression_eye_close_left;
@@ -1635,7 +1686,7 @@ public class ModelControl : MonoBehaviour {
         expression_eye_fun = Math.Max(happiness * 0.7f, expression_eye_fun);
 
         if (happiness > 0.0f) {
-            Float32 eye_joy_scale;
+            f32 eye_joy_scale;
             if (happiness >= 80.0f) {
                 eye_joy_scale = 1.0f;
             } else {
@@ -1661,12 +1712,12 @@ public class ModelControl : MonoBehaviour {
         this.expression_eyebrow_fun = utils.merge_values(this.expression_eyebrow_fun, happiness);
 
         // Mouth
-        Float32 expression_mouth_a = this.expression_mouth_a;
-        Float32 expression_mouth_o = this.expression_mouth_o;
-        Float32 expression_mouth_i = this.expression_mouth_i;
+        f32 expression_mouth_a = this.expression_mouth_a;
+        f32 expression_mouth_o = this.expression_mouth_o;
+        f32 expression_mouth_i = this.expression_mouth_i;
 
-        Float32 mouth_openness = (expression_mouth_a + expression_mouth_o) / 2.0f;
-        Float32 joy = Math.Min(mouth_openness, happiness * 3.0f);
+        f32 mouth_openness = (expression_mouth_a + expression_mouth_o) / 2.0f;
+        f32 joy = Math.Min(mouth_openness, happiness * 3.0f);
 
         expression_mouth_o -= (joy * 2.0f);
         if (expression_mouth_o < 0.0f) {
@@ -1686,21 +1737,21 @@ public class ModelControl : MonoBehaviour {
     }
 
     void update_surprised() {
-        Float32 surprise = this.surprise;
+        f32 surprise = this.surprise;
         // Update eyebrow even if we don not do `o` face
         this.expression_eyebrow_surprised = utils.merge_values(this.expression_eyebrow_surprised, surprise * 0.5f);
         if (surprise > 50.0f) {
             this.expression_eye_surprised = utils.merge_values(this.expression_eye_surprised, (surprise -50.0f) * 2.0f);
         }
 
-        Float32 expression_mouth_u = this.expression_mouth_u;
+        f32 expression_mouth_u = this.expression_mouth_u;
         if (expression_mouth_u >= 0.0f) {
             surprise = Math.Min(surprise, expression_mouth_u * 2.0f);
 
             // Mouth - Convert excess a to expression_mouth_surprised
-            Float32 expression_mouth_a = this.expression_mouth_a;
-            Float32 expression_mouth_o = this.expression_mouth_o;
-            Float32 expression_mouth_surprised;
+            f32 expression_mouth_a = this.expression_mouth_a;
+            f32 expression_mouth_o = this.expression_mouth_o;
+            f32 expression_mouth_surprised;
 
             // reduce a face
             expression_mouth_surprised = Math.Min(surprise, expression_mouth_a);
@@ -1723,13 +1774,13 @@ public class ModelControl : MonoBehaviour {
     }
 
     void update_anger() {
-        Float32 anger = this.anger;
+        f32 anger = this.anger;
 
         if (anger < 0.0f) {
             return;
         }
         
-        Float32 eye_max_close = Math.Max(this.expression_eye_close_left, this.expression_eye_close_right);
+        f32 eye_max_close = Math.Max(this.expression_eye_close_left, this.expression_eye_close_right);
         if (eye_max_close == 0.0f) {
             this.expression_eye_angry = utils.merge_values(this.expression_eye_angry, anger);
         } else if (eye_max_close < 70.0f) {
@@ -1746,7 +1797,7 @@ public class ModelControl : MonoBehaviour {
 
 
     void update_sadness() {
-        Float32 sadness = this.sadness;
+        f32 sadness = this.sadness;
 
         if (sadness <= 0.0f) {
             return;
@@ -1783,7 +1834,7 @@ public class ModelControl : MonoBehaviour {
 
 
     void update_fear() {
-        Float32 fear = this.fear;
+        f32 fear = this.fear;
 
         if (fear <= 0.0) {
             return;
@@ -1806,7 +1857,7 @@ public class ModelControl : MonoBehaviour {
             this.expression_eye_highlight_hide, fear
         );
 
-        Float32 mouth_openness = (Float32)Math.Sqrt((Float64)(
+        f32 mouth_openness = (f32)Math.Sqrt((f64)(
             utils.square(this.expression_mouth_a) +
             utils.square(this.expression_mouth_u) +
             utils.square(this.expression_mouth_o) +
@@ -1826,7 +1877,7 @@ public class ModelControl : MonoBehaviour {
             fear = 75.0f;
         }
 
-        Float32 mouth_openness_reduction = 1.0f - fear / 300.0f;
+        f32 mouth_openness_reduction = 1.0f - fear / 300.0f;
 
         this.expression_mouth_a *= mouth_openness_reduction;
         this.expression_mouth_u *= mouth_openness_reduction;
@@ -1844,7 +1895,7 @@ public class ModelControl : MonoBehaviour {
     }
 
     void update_disgust() {
-        Float32 disgust = this.disgust;
+        f32 disgust = this.disgust;
         if (disgust <= 0.0f) {
             return;
         }
@@ -1864,7 +1915,7 @@ public class ModelControl : MonoBehaviour {
             this.expression_mouth_angry, disgust * 0.25f
         );
 
-        Float32 mouth_openness = (Float32)Math.Sqrt((Float64)(
+        f32 mouth_openness = (f32)Math.Sqrt((f64)(
             utils.square(this.expression_mouth_a) +
             utils.square(this.expression_mouth_u) +
             utils.square(this.expression_mouth_o) +
@@ -1884,7 +1935,7 @@ public class ModelControl : MonoBehaviour {
             disgust = 75.0f;
         }
 
-        Float32 mouth_openness_reduction = 1.0f - disgust / 300.0f;
+        f32 mouth_openness_reduction = 1.0f - disgust / 300.0f;
 
         this.expression_mouth_a *= mouth_openness_reduction;
         this.expression_mouth_u *= mouth_openness_reduction;
@@ -1935,44 +1986,44 @@ public class ModelControl : MonoBehaviour {
     void update_face() {
         SkinnedMeshRenderer face_mesh = this.face_mesh;
         if (face_mesh != null) {
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_CLOSE_LEFT, this.expression_eye_close_left);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_CLOSE_RIGHT, this.expression_eye_close_right);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_FUN, this.expression_eye_fun);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_SURPRISED, this.expression_eye_surprised);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_JOY_LEFT, this.expression_eye_joy_left);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_JOY_RIGHT, this.expression_eye_joy_right);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_ANGRY, this.expression_eye_angry);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_SPREAD, this.expression_eye_spread);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_SORROW, this.expression_eye_sorrow);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYE_HIGHLIGHT_HIDE, this.expression_eye_highlight_hide);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYE_CLOSE_LEFT, this.expression_eye_close_left);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYE_CLOSE_RIGHT, this.expression_eye_close_right);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYE_FUN, this.expression_eye_fun);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYE_SURPRISED, this.expression_eye_surprised);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYE_JOY_LEFT, this.expression_eye_joy_left);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYE_JOY_RIGHT, this.expression_eye_joy_right);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYE_ANGRY, this.expression_eye_angry);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYE_SPREAD, this.expression_eye_spread);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYE_SORROW, this.expression_eye_sorrow);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYE_HIGHLIGHT_HIDE, this.expression_eye_highlight_hide);
 
 
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYEBROW_FUN, this.expression_eyebrow_fun);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYEBROW_FUN, this.expression_eyebrow_fun);
             // At high values might cause eyebrow to go under the skin partially
             face_mesh.SetBlendShapeWeight(
-                (Int32)FACE_MESH.EYEBROW_SURPRISED, Math.Min(this.expression_eyebrow_surprised, 140.0f)
+                (i32)FACE_MESH.EYEBROW_SURPRISED, Math.Min(this.expression_eyebrow_surprised, 140.0f)
             );
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYEBROW_ANGRY, this.expression_eyebrow_angry);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYEBROW_JOY, this.expression_eyebrow_joy);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.EYEBROW_SORROW, this.expression_eyebrow_sorrow);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYEBROW_ANGRY, this.expression_eyebrow_angry);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYEBROW_JOY, this.expression_eyebrow_joy);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.EYEBROW_SORROW, this.expression_eyebrow_sorrow);
 
 
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_A, this.expression_mouth_a);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_I, this.expression_mouth_i);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_U, this.expression_mouth_u);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_O, this.expression_mouth_o);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_O, this.expression_mouth_o);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_FUN, this.expression_mouth_fun);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_JOY, this.expression_mouth_joy);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_SURPRISED, this.expression_mouth_surprised);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_ANGRY, this.expression_mouth_angry);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_NEUTRAL, this.expression_mouth_neutral);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_UP, this.expression_mouth_up);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.MOUTH_SORROW, this.expression_mouth_sorrow);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.MOUTH_A, this.expression_mouth_a);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.MOUTH_I, this.expression_mouth_i);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.MOUTH_U, this.expression_mouth_u);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.MOUTH_O, this.expression_mouth_o);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.MOUTH_O, this.expression_mouth_o);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.MOUTH_FUN, this.expression_mouth_fun);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.MOUTH_JOY, this.expression_mouth_joy);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.MOUTH_SURPRISED, this.expression_mouth_surprised);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.MOUTH_ANGRY, this.expression_mouth_angry);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.MOUTH_NEUTRAL, this.expression_mouth_neutral);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.MOUTH_UP, this.expression_mouth_up);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.MOUTH_SORROW, this.expression_mouth_sorrow);
 
 
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.TEETH_SHORT_BOT, this.expression_teeth_short_bot);
-            face_mesh.SetBlendShapeWeight((Int32)FACE_MESH.TEETH_SHORT_TOP, this.expression_teeth_short_top);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.TEETH_SHORT_BOT, this.expression_teeth_short_bot);
+            face_mesh.SetBlendShapeWeight((i32)FACE_MESH.TEETH_SHORT_TOP, this.expression_teeth_short_top);
         }
     }
 
@@ -1992,6 +2043,7 @@ public class ModelControl : MonoBehaviour {
         this.do_body_movement_smooth_step(body_movement_target);
 
         this.clear_expressions();
+        this.update_body();
         this.update_head();
         this.update_irises();
         this.update_arms();
@@ -2031,7 +2083,7 @@ public class ModelControl : MonoBehaviour {
             try {
                 tcp_client.Close();
             } catch (Exception exception) {
-                UnityEngine.Debug.Log(exception.Message);
+                Debug.Log(exception.Message);
             }
         }
         
@@ -2040,7 +2092,7 @@ public class ModelControl : MonoBehaviour {
             try {
                 tcp_listener.Stop();
             } catch (Exception exception) {
-                UnityEngine.Debug.Log(exception.Message);
+                Debug.Log(exception.Message);
             }
         }
     }
