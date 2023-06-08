@@ -183,7 +183,11 @@ public static class utils {
             utils.square(point_1_y - point_2_y)
         ));
     }
-
+    
+    public static f32 pythagoras(f32 value_0, f32 value_1) {
+        return (f32)Math.Sqrt((f64)(value_0 * value_0) + (f64)(value_1 * value_1));
+    }
+    
     public static f32 merge_values(f32 value_1, f32 value_2) {
         if (value_1 == 0.0f) {
             return value_2;
@@ -358,14 +362,22 @@ public class ExpressionData {
 
 
 public class BodyMovementData {
+    public f32 arm_upper_left_x = 0.0f;
+    public f32 arm_upper_left_z = 0.0f;
+    public f32 arm_upper_right_x = 0.0f;
+    public f32 arm_upper_right_z = 0.0f;
     public f32 shoulder_x = 0.0f;
     public f32 shoulder_z = 0.0f;
     
     public BodyMovementData() {}
     
     public BodyMovementData(f32[] packet_data) {
-        this.shoulder_x = packet_data[0];
-        this.shoulder_z = packet_data[1];
+        this.arm_upper_left_x = packet_data[0];
+        this.arm_upper_left_z = packet_data[1];
+        this.arm_upper_right_x = packet_data[2];
+        this.arm_upper_right_z = packet_data[3];
+        this.shoulder_x = packet_data[4];
+        this.shoulder_z = packet_data[5];
     }
 }
 
@@ -379,15 +391,6 @@ public class ModelControl : MonoBehaviour {
     [SerializeField]
     [Range(-15.0f, +15.0f)]
     public f32 camera_angle_vertical = -15.0f;
-
-    [Header("Arms")]
-    [SerializeField]
-    [Range(-90.0f, 0.0f)]
-    public f32 right_arm_angle = -60.0f;
-
-    [SerializeField]
-    [Range(-90.0f, 0.0f)]
-    public f32 left_arm_angle = -60.0f;
 
     [Header("Mouth")]
     [SerializeField]
@@ -447,7 +450,7 @@ public class ModelControl : MonoBehaviour {
     [Header("Hair")]
     [SerializeField]
     [Range(0.0f, 4.0f)]
-    public f32 hair_stiffness = 0.36f;
+    public f32 hair_stiffness = 0.20f;
     [SerializeField]
     [Range(0.0f, 1.0f)]
     public f32 hair_gravity = 0.08f;
@@ -529,6 +532,14 @@ public class ModelControl : MonoBehaviour {
     public f32 anger = 0.0f;
     
     [Header("Body")]
+    [Range(-180.0f, +180f)]
+    public f32 arm_upper_left_x = 0.0f;
+    [Range(-180.0f, +180f)]
+    public f32 arm_upper_left_z = 0.0f;
+    [Range(-180.0f, +180f)]
+    public f32 arm_upper_right_x = 0.0f;
+    [Range(-180.0f, +180f)]
+    public f32 arm_upper_right_z = 0.0f;
     [Range(-180.0f, +180f)]
     public f32 shoulder_x = 0.0f;
     [Range(-180.0f, +180f)]
@@ -882,6 +893,10 @@ public class ModelControl : MonoBehaviour {
         if (smooth_level == 1) {
             if (smooth_step == 0) {
                 if (! this.lock_body_movements) {
+                    this.arm_upper_left_x = body_movement_target.arm_upper_left_x;
+                    this.arm_upper_left_z = body_movement_target.arm_upper_left_z;
+                    this.arm_upper_right_x = body_movement_target.arm_upper_right_x;
+                    this.arm_upper_right_z = body_movement_target.arm_upper_right_z;
                     this.shoulder_x = body_movement_target.shoulder_x;
                     this.shoulder_z = body_movement_target.shoulder_z;
                 }
@@ -893,6 +908,18 @@ public class ModelControl : MonoBehaviour {
                 body_movement_step = new BodyMovementData();
                 this.body_movement_step = body_movement_step;
                 
+                body_movement_step.arm_upper_left_x = (
+                    (body_movement_target.arm_upper_left_x - this.arm_upper_left_x) / smooth_level
+                );
+                body_movement_step.arm_upper_left_z = (
+                    (body_movement_target.arm_upper_left_z - this.arm_upper_left_z) / smooth_level
+                );
+                body_movement_step.arm_upper_right_x = (
+                    (body_movement_target.arm_upper_right_x - this.arm_upper_right_x) / smooth_level
+                );
+                body_movement_step.arm_upper_right_z = (
+                    (body_movement_target.arm_upper_right_z - this.arm_upper_right_z) / smooth_level
+                );
                 body_movement_step.shoulder_x = (body_movement_target.shoulder_x - this.shoulder_x) / smooth_level;
                 body_movement_step.shoulder_z = (body_movement_target.shoulder_z - this.shoulder_z) / smooth_level;
                 
@@ -905,6 +932,10 @@ public class ModelControl : MonoBehaviour {
                 }
             }
             if (! this.lock_body_movements) {
+                this.arm_upper_left_x += body_movement_step.arm_upper_left_x;
+                this.arm_upper_left_z += body_movement_step.arm_upper_left_z;
+                this.arm_upper_right_x += body_movement_step.arm_upper_right_x;
+                this.arm_upper_right_z += body_movement_step.arm_upper_right_z;
                 this.shoulder_x += body_movement_step.shoulder_x;
                 this.shoulder_z += body_movement_step.shoulder_z;
             }
@@ -1388,6 +1419,7 @@ public class ModelControl : MonoBehaviour {
 
 
     void update_arms() {
+        GameObject body_root = this.body_root;
         GameObject shoulder_right = this.shoulder_right;
         GameObject shoulder_left = this.shoulder_left;
         GameObject arm_upper_right = this.arm_upper_right;
@@ -1396,6 +1428,7 @@ public class ModelControl : MonoBehaviour {
         GameObject arm_lower_left = this.arm_lower_left;
 
         if (
+            (body_root != null) &&
             (shoulder_right != null) &&
             (shoulder_left != null) &&
             (arm_upper_right != null) &&
@@ -1403,49 +1436,54 @@ public class ModelControl : MonoBehaviour {
             (arm_lower_right != null) &&
             (arm_lower_left != null)
         ) {
-            Transform shoulder_right_transform = shoulder_right.transform;
-            Transform shoulder_left_transform = shoulder_left.transform;
-            Transform arm_upper_right_transform = arm_upper_right.transform;
-            Transform arm_upper_left_transform = arm_upper_left.transform;
-
-            f32 right_arm_angle = this.right_arm_angle;
-            f32 left_arm_angle = this.left_arm_angle;
-
-            arm_upper_right_transform.rotation = (
-                shoulder_right_transform.rotation * Quaternion.Euler(0.0f, 0.0f, right_arm_angle)
+            Quaternion root_rotation = body_root.transform.rotation;
+            
+            arm_upper_right.transform.rotation = body_root.transform.rotation *  Quaternion.Euler(
+                0.0f, -this.arm_upper_right_x, -this.arm_upper_right_z
             );
-
-            arm_upper_left_transform.rotation = (
-                shoulder_left_transform.rotation * Quaternion.Euler(0.0f, 0.0f, -left_arm_angle)
+            arm_upper_left.transform.rotation = body_root.transform.rotation *  Quaternion.Euler(
+                0.0f, this.arm_upper_left_x, this.arm_upper_left_z
             );
-
-            if (right_arm_angle < -70.0f) {
-                arm_lower_right.transform.rotation = (
-                    arm_upper_right_transform.rotation * Quaternion.Euler(0.0f, 0.0f, (right_arm_angle + 70.0f) * -0.5f)
+            
+            // Rotate lower arm if rotation high?
+            /*
+            if (right_arm_angle > 70.0f) {
+                arm_lower_right.transform.rotation = body_root.transform.rotation * (
+                    arm_upper_right_transform.rotation * Quaternion.Euler(0.0f, 0.0f, (right_arm_angle + 70.0f) * 0.5f)
                 );
             } else {
                 arm_lower_right.transform.rotation = arm_upper_right_transform.rotation;
             }
 
-            if (left_arm_angle < -70.0f) {
-                arm_lower_left.transform.rotation = (
-                    arm_upper_left_transform.rotation * Quaternion.Euler(0.0f, 0.0f, (left_arm_angle + 70.0f) * 0.5f)
+            if (left_arm_angle > 70.0f) {
+                arm_lower_left.transform.rotation = body_root.transform.rotation * (
+                    arm_upper_left_transform.rotation * Quaternion.Euler(0.0f, 0.0f, (left_arm_angle + 70.0f) * -0.5f)
                 );
             } else {
                 arm_lower_left.transform.rotation = arm_upper_left_transform.rotation;
             }
-
-            arm_upper_right_transform.position = (
-                shoulder_right_transform.position +
-                shoulder_right_transform.rotation * new Vector3(
-                    this.shoulder_length * (1.0f + Math.Abs(right_arm_angle / 180f)), 0.0f, 0.0f
+            */
+            
+            // Increase shoulder width if rotation < / > 0 up to 180° by 35%
+            arm_upper_right.transform.position = (
+                shoulder_right.transform.position +
+                shoulder_right.transform.rotation * new Vector3(
+                    this.shoulder_length * (
+                        1.0f + Math.Min(Math.Max(this.arm_upper_right_z / 180.0f, 0.0f), 0.35f)
+                    ),
+                    0.0f,
+                    0.0f
                 )
             );
 
-            arm_upper_left_transform.position = (
-                shoulder_left_transform.position -
-                shoulder_left_transform.rotation * new Vector3(
-                    this.shoulder_length * (1.0f + Math.Abs(left_arm_angle / 180f)), 0.0f, 0.0f
+            arm_upper_left.transform.position = (
+                shoulder_left.transform.position -
+                shoulder_left.transform.rotation * new Vector3(
+                    this.shoulder_length * (
+                        1.0f + Math.Min(Math.Max(this.arm_upper_left_z / 180.0f, 0.0f), 0.35f)
+                    ),
+                    0.0f,
+                    0.0f
                 )
             );
         }
