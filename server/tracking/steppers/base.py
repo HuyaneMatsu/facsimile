@@ -31,6 +31,10 @@ class BaseDataStepper:
             Monotonic time.
         landmarks : ``LandMarks``
             Object containing landmarks.
+        
+        Returns
+        -------
+        stepped : `bool`
         """
         raise NotImplementedError
     

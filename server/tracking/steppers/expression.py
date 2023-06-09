@@ -79,10 +79,14 @@ class ExpressionDataStepper(BaseDataStepper):
             Monotonic time.
         landmarks : ``Landmarks``
             Object containing landmarks.
+        
+        Returns
+        -------
+        stepped : `bool`
         """
         face_landmarks = landmarks.face
         if face_landmarks is None:
-            return
+            return False
         
         happiness, sadness, surprise, fear, disgust, anger = detect_expressions(face_landmarks, landmarks.image)
             
@@ -92,8 +96,9 @@ class ExpressionDataStepper(BaseDataStepper):
         self.fear = self.fear_smoother(fear, time)
         self.disgust = self.disgust_smoother(disgust, time)
         self.anger = self.anger_smoother(anger, time)
-        
-
+        return True
+    
+    
     def get_data(self):
         """
         Gets data of the stepper for its current state.

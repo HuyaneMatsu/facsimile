@@ -366,6 +366,9 @@ public class BodyMovementData {
     public f32 arm_upper_left_z = 0.0f;
     public f32 arm_upper_right_x = 0.0f;
     public f32 arm_upper_right_z = 0.0f;
+    public f32 back_y = 0.0f;
+    public f32 hip_x = 0.0f;
+    public f32 hip_z = 0.0f;
     public f32 shoulder_x = 0.0f;
     public f32 shoulder_z = 0.0f;
     
@@ -376,8 +379,11 @@ public class BodyMovementData {
         this.arm_upper_left_z = packet_data[1];
         this.arm_upper_right_x = packet_data[2];
         this.arm_upper_right_z = packet_data[3];
-        this.shoulder_x = packet_data[4];
-        this.shoulder_z = packet_data[5];
+        this.back_y = packet_data[4];
+        this.hip_x = packet_data[5];
+        this.hip_z = packet_data[6];
+        this.shoulder_x = packet_data[7];
+        this.shoulder_z = packet_data[8];
     }
 }
 
@@ -540,6 +546,12 @@ public class ModelControl : MonoBehaviour {
     public f32 arm_upper_right_x = 0.0f;
     [Range(-180.0f, +180f)]
     public f32 arm_upper_right_z = 0.0f;
+    [Range(0.0f, +90f)]
+    public f32 back_y = 0.0f;
+    [Range(-180.0f, +180f)]
+    public f32 hip_x = 0.0f;
+    [Range(-180.0f, +180f)]
+    public f32 hip_z = 0.0f;
     [Range(-180.0f, +180f)]
     public f32 shoulder_x = 0.0f;
     [Range(-180.0f, +180f)]
@@ -569,7 +581,7 @@ public class ModelControl : MonoBehaviour {
     private GameObject arm_lower_right = null;
     private GameObject arm_lower_left = null;
     private f32 shoulder_length = 0.0f;
-    public f32 root_to_head = 1.6f;
+    private f32 root_to_head = 1.6f;
     private GameObject body_root = null;
     private GameObject hips = null;
     private GameObject spine = null;
@@ -897,6 +909,9 @@ public class ModelControl : MonoBehaviour {
                     this.arm_upper_left_z = body_movement_target.arm_upper_left_z;
                     this.arm_upper_right_x = body_movement_target.arm_upper_right_x;
                     this.arm_upper_right_z = body_movement_target.arm_upper_right_z;
+                    this.back_y = body_movement_target.back_y;
+                    this.hip_x = body_movement_target.hip_x;
+                    this.hip_z = body_movement_target.hip_z;
                     this.shoulder_x = body_movement_target.shoulder_x;
                     this.shoulder_z = body_movement_target.shoulder_z;
                 }
@@ -920,6 +935,9 @@ public class ModelControl : MonoBehaviour {
                 body_movement_step.arm_upper_right_z = (
                     (body_movement_target.arm_upper_right_z - this.arm_upper_right_z) / smooth_level
                 );
+                body_movement_step.back_y = (body_movement_target.back_y - this.back_y) / smooth_level;
+                body_movement_step.hip_x = (body_movement_target.hip_x - this.hip_x) / smooth_level;
+                body_movement_step.hip_z = (body_movement_target.hip_z - this.hip_z) / smooth_level;
                 body_movement_step.shoulder_x = (body_movement_target.shoulder_x - this.shoulder_x) / smooth_level;
                 body_movement_step.shoulder_z = (body_movement_target.shoulder_z - this.shoulder_z) / smooth_level;
                 
@@ -936,6 +954,9 @@ public class ModelControl : MonoBehaviour {
                 this.arm_upper_left_z += body_movement_step.arm_upper_left_z;
                 this.arm_upper_right_x += body_movement_step.arm_upper_right_x;
                 this.arm_upper_right_z += body_movement_step.arm_upper_right_z;
+                this.back_y += body_movement_step.back_y;
+                this.hip_x += body_movement_step.hip_x;
+                this.hip_z += body_movement_step.hip_z;
                 this.shoulder_x += body_movement_step.shoulder_x;
                 this.shoulder_z += body_movement_step.shoulder_z;
             }
@@ -1390,29 +1411,42 @@ public class ModelControl : MonoBehaviour {
     void update_body() {
         /* Rotate spine and chest too. This makes it more natural. */
         GameObject body_root = this.body_root;
+        GameObject hips = this.hips;
         GameObject spine = this.spine;
         GameObject chest = this.chest;
         GameObject chest_upper = this.chest_upper;
 
-        if ((body_root != null) && (spine != null) && (chest != null) && (chest_upper != null)) {
+        if ((body_root != null) && (hips != null) && (spine != null) && (chest != null) && (chest_upper != null)) {
             Quaternion root_rotation = body_root.transform.rotation;
-
+            
+            f32 back_y = this.back_y;
+            f32 hip_x = this.hip_x;
+            f32 hip_z = this.hip_z;
+            f32 shoulder_x = this.shoulder_x;
+            f32 shoulder_z = this.shoulder_z;
+            
+            hips.transform.rotation = root_rotation * Quaternion.Euler(
+                back_y,
+                hip_x,
+                hip_z
+            );
+            
             spine.transform.rotation = root_rotation * Quaternion.Euler(
-                0.0f,
-                this.shoulder_x * 0.4f, // subtract hip later when implemented
-                this.shoulder_z * 0.4f
+                back_y,
+                hip_x * 0.6f + shoulder_x * 0.4f,
+                hip_z * 0.6f + shoulder_z * 0.4f
             );
 
             chest.transform.rotation = root_rotation * Quaternion.Euler(
-                0.0f,
-                this.shoulder_x * 0.8f, // subtract hip later when implemented
-                this.shoulder_z * 0.8f
+                back_y,
+                hip_x * 0.2f + shoulder_x * 0.8f,
+                hip_z * 0.2f + shoulder_z * 0.8f
             );
             
             chest_upper.transform.rotation = root_rotation * Quaternion.Euler(
-                0.0f,
-                this.shoulder_x * 1.0f, // subtract hip later when implemented
-                this.shoulder_z * 1.0f
+                back_y,
+                shoulder_x,
+                shoulder_z
             );
         }
     }
@@ -1464,7 +1498,7 @@ public class ModelControl : MonoBehaviour {
             }
             */
             
-            // Increase shoulder width if rotation < / > 0 up to 180° by 35%
+            // Increase shoulder width if rotation < / > 0 up to 180° by 20%
             arm_upper_right.transform.position = (
                 shoulder_right.transform.position +
                 shoulder_right.transform.rotation * new Vector3(

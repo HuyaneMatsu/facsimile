@@ -159,10 +159,14 @@ class FaceDataStepper(BaseDataStepper):
             Monotonic time.
         landmarks : ``Landmarks``
             Object containing landmarks.
+        
+        Returns
+        -------
+        stepped : `bool`
         """
         face_landmarks = landmarks.face
         if face_landmarks is None:
-            return
+            return False
         
         mouth_openness_x, mouth_openness_y = get_mouth_openness(face_landmarks)
         
@@ -299,7 +303,9 @@ class FaceDataStepper(BaseDataStepper):
         self.smile_ratio = self.smile_ratio_smoother(smile_ratio, time)
         self.eyebrow_liftedness = self.eyebrow_liftedness_smoother(eyebrow_liftedness, time)
         
-
+        return True
+    
+    
     def get_data(self):
         """
         Gets data of the stepper for its current state.

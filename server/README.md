@@ -28,9 +28,9 @@ Install [DroidCam](https://www.dev47apps.com/) on your android device.
 
 - Note: You don't need the PC client of DroidCam, just the mobile server is needed.
 
-Start up the server with `--to` parameter. Put the displayed address by DroidCam after it.
+Start up the server with `--read-from` parameter. Put the displayed address by DroidCam after it.
 
-`--to` is for the "IP CAM address" with "/video" suffix. Example:
+`--read-from` is for the "IP CAM address" with "/video" suffix. Example:
 
 ```sh
 python3 server --read-from http://0.0.0.0:4747/video
